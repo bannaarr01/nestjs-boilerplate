@@ -82,6 +82,8 @@ async function bootstrap(): Promise<void> {
   validateEnvironmentOrThrow();
 
   const port = Number(process.env.PORT || 8080);
+  const appName = process.env.APP_NAME || process.env.npm_package_name || 'nestjs-app';
+  const appDescription = process.env.APP_DESCRIPTION || 'Reusable NestJS starter';
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log']
@@ -120,8 +122,8 @@ async function bootstrap(): Promise<void> {
 
   if (process.env.SHOW_SWAGGER === 'true') {
     const config = new DocumentBuilder()
-      .setTitle('NestJS Boilerplate API')
-      .setDescription('Reusable NestJS starter')
+      .setTitle(`${appName} API`)
+      .setDescription(appDescription)
       .setVersion(process.env.npm_package_version || '1.0.0')
       .addBearerAuth()
       .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'x-api-key')
@@ -151,4 +153,3 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap();
-

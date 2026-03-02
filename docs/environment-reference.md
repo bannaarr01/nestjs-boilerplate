@@ -20,6 +20,8 @@ Notes:
 ## Core
 - `PORT`: app port, default `8080`
 - `NODE_ENV`: `development|production|staging|...`
+- `APP_NAME`: application name shown in API info and Swagger title
+- `APP_DESCRIPTION`: Swagger description text
 - `SHOW_SWAGGER`: `true|false`
 - `RUN_MIGRATIONS_ON_BOOT`: `true|false`
 - `RUN_SEEDERS_ON_BOOT`: `true|false`

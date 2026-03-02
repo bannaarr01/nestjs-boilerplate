@@ -13,8 +13,10 @@ export class AppService {
   constructor(private readonly orm: MikroORM) {}
 
   getInfo(): AppInfoDto {
+    const appName = process.env.APP_NAME || process.env.npm_package_name || 'nestjs-app';
+
     return {
-      name: 'nestjs-boilerplate',
+      name: appName,
       version: process.env.npm_package_version || '1.0.0',
       dbClient: process.env.DB_CLIENT || 'postgresql',
       redisEnabled: isRedisEnabled()
@@ -85,4 +87,3 @@ export class AppService {
     };
   }
 }
-
