@@ -2,6 +2,12 @@
 
 Reusable NestJS starter.
 
+## Documentation
+- Full docs index: [docs/README.md](./docs/README.md)
+- Quick start: [docs/quick-start.md](./docs/quick-start.md)
+- Runtime profile setup: [docs/runtime-profiles.md](./docs/runtime-profiles.md)
+- Security guide: [docs/security.md](./docs/security.md)
+
 ## Included Foundations
 - NestJS bootstrap with CORS, validation, URI versioning, Swagger toggle
 - Mandatory API key guard (`x-api-key`) + JWT auth module
@@ -196,7 +202,7 @@ npm run build:app
 
 ## 9. Agent Rules
 
-See [AGENTS.md](/Users/josh/lllinc/nestjs-boilerplate/AGENTS.md) for:
+See [AGENTS.md](./AGENTS.md) for:
 - permission mode policy
 - plan -> execute -> verify workflow
 - Git safety rules (`no commit/push` by agent)
