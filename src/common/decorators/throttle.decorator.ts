@@ -15,9 +15,9 @@ export type ThrottleInput = {
 };
 
 export const Throttle = (config: ThrottleInput): MethodDecorator & ClassDecorator =>
-  SetMetadata(THROTTLE_METADATA_KEY, {
-    limit: config.default.limit,
-    ttlMs: config.default.ttl
-  } satisfies ThrottleConfig);
+   SetMetadata(THROTTLE_METADATA_KEY, {
+      limit: config.default.limit,
+      ttlMs: config.default.ttl
+   } satisfies ThrottleConfig);
 
 

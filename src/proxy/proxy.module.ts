@@ -5,9 +5,9 @@ import { CommonModule } from '../common/common.module';
 import { ProxyConfigService } from './proxy-config.service';
 
 @Module({
-  imports: [HttpModule, CommonModule],
-  providers: [ProxyConfigService, ProxyService],
-  exports: [ProxyConfigService, ProxyService]
+   imports: [HttpModule, CommonModule],
+   providers: [ProxyConfigService, ProxyService],
+   exports: [ProxyConfigService, ProxyService]
 })
 export class ProxyModule {}
 

@@ -27,7 +27,7 @@ npm pkg set name=user-management
 Then edit `.env`:
 ```env
 APP_NAME=user-management
-APP_DESCRIPTION=User management service
+APP_DESCRIPTION="User management service"
 ```
 
 Notes:

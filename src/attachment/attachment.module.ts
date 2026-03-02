@@ -7,10 +7,10 @@ import { AttachmentController } from './attachment.controller';
 import { AttachmentEntity } from './entities/attachment.entity';
 
 @Module({
-  imports: [CommonModule, StorageModule, MikroOrmModule.forFeature([AttachmentEntity])],
-  controllers: [AttachmentController],
-  providers: [AttachmentService],
-  exports: [AttachmentService]
+   imports: [CommonModule, StorageModule, MikroOrmModule.forFeature([AttachmentEntity])],
+   controllers: [AttachmentController],
+   providers: [AttachmentService],
+   exports: [AttachmentService]
 })
 export class AttachmentModule {}
 

@@ -1,40 +1,40 @@
 export function parseBooleanEnv(value: string | undefined, defaultValue: boolean = false): boolean {
-  if (value === undefined || value === null || value === '') {
-    return defaultValue;
-  }
+   if (value === undefined || value === null || value === '') {
+      return defaultValue;
+   }
 
-  const normalized = value.toLowerCase();
+   const normalized = value.toLowerCase();
 
-  if (['true', '1', 'yes', 'on'].includes(normalized)) {
-    return true;
-  }
+   if (['true', '1', 'yes', 'on'].includes(normalized)) {
+      return true;
+   }
 
-  if (['false', '0', 'no', 'off'].includes(normalized)) {
-    return false;
-  }
+   if (['false', '0', 'no', 'off'].includes(normalized)) {
+      return false;
+   }
 
-  return defaultValue;
+   return defaultValue;
 }
 
 export function isDevelopment(): boolean {
-  const nodeEnv = process.env.NODE_ENV?.toLowerCase();
-  return nodeEnv === 'development' || nodeEnv === 'dev';
+   const nodeEnv = process.env.NODE_ENV?.toLowerCase();
+   return nodeEnv === 'development' || nodeEnv === 'dev';
 }
 
 export function isProduction(): boolean {
-  const nodeEnv = process.env.NODE_ENV?.toLowerCase();
-  return nodeEnv === 'production' || nodeEnv === 'prod';
+   const nodeEnv = process.env.NODE_ENV?.toLowerCase();
+   return nodeEnv === 'production' || nodeEnv === 'prod';
 }
 
 export function isStaging(): boolean {
-  const nodeEnv = process.env.NODE_ENV?.toLowerCase();
-  return nodeEnv === 'staging' || nodeEnv === 'stg';
+   const nodeEnv = process.env.NODE_ENV?.toLowerCase();
+   return nodeEnv === 'staging' || nodeEnv === 'stg';
 }
 
 export function getEnvironment(): string {
-  return process.env.NODE_ENV || 'unknown';
+   return process.env.NODE_ENV || 'unknown';
 }
 
 export function isRedisEnabled(): boolean {
-  return parseBooleanEnv(process.env.REDIS_ENABLED, false);
+   return parseBooleanEnv(process.env.REDIS_ENABLED, false);
 }

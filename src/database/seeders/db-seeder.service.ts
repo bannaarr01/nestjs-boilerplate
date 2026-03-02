@@ -6,27 +6,27 @@ import { ErrorHandlerService } from '../../common/services/error-handler.service
 
 @Injectable()
 export class DbSeederService {
-  constructor(
+   constructor(
     private readonly orm: MikroORM,
     private readonly logger: LoggingService,
     private readonly errorHandler: ErrorHandlerService
-  ) {}
+   ) {}
 
-  async runSeeder(): Promise<void> {
-    this.logger.getLogger().info('Seeder init...', {
-      label: `${DbSeederService.name}.runSeeder`
-    });
-
-    try {
-      await this.orm.getSeeder().seed(DatabaseSeeder);
-
-      this.logger.getLogger().info('Seeder completed.', {
-        label: `${DbSeederService.name}.runSeeder`
+   async runSeeder(): Promise<void> {
+      this.logger.getLogger().info('Seeder init...', {
+         label: `${DbSeederService.name}.runSeeder`
       });
-    } catch (error) {
-      throw this.errorHandler.handleServiceError(error, DbSeederService, '.runSeeder');
-    }
-  }
+
+      try {
+         await this.orm.getSeeder().seed(DatabaseSeeder);
+
+         this.logger.getLogger().info('Seeder completed.', {
+            label: `${DbSeederService.name}.runSeeder`
+         });
+      } catch (error) {
+         throw this.errorHandler.handleServiceError(error, DbSeederService, '.runSeeder');
+      }
+   }
 }
 
 

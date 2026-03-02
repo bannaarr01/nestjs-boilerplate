@@ -5,7 +5,7 @@ export class QueueJobParamDto {
   @ApiProperty({ example: '27' })
   @IsString()
   @IsNotEmpty()
-  jobId: string;
+     jobId: string;
 }
 
 

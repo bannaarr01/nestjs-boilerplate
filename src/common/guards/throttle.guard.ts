@@ -16,164 +16,164 @@ type WindowState = {
 
 @Injectable()
 export class ThrottleGuard implements CanActivate, OnModuleDestroy {
-  private readonly windows = new Map<string, WindowState>();
-  private readonly redisThrottleEnabled =
-    parseBooleanEnv(process.env.THROTTLE_USE_REDIS, true) && isRedisEnabled();
-  private readonly trustProxyEnabled = parseBooleanEnv(process.env.TRUST_PROXY, false);
-  private redisClient?: Redis;
+   private readonly windows = new Map<string, WindowState>();
+   private readonly redisThrottleEnabled =
+      parseBooleanEnv(process.env.THROTTLE_USE_REDIS, true) && isRedisEnabled();
+   private readonly trustProxyEnabled = parseBooleanEnv(process.env.TRUST_PROXY, false);
+   private redisClient?: Redis;
 
-  constructor(private readonly reflector: Reflector) {}
+   constructor(private readonly reflector: Reflector) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+   async canActivate(context: ExecutionContext): Promise<boolean> {
+      const request = context.switchToHttp().getRequest<Request>();
 
-    if (!request) {
+      if (!request) {
+         return true;
+      }
+
+      const endpointConfig = this.reflector.getAllAndOverride<ThrottleConfig>(THROTTLE_METADATA_KEY, [
+         context.getHandler(),
+         context.getClass()
+      ]);
+      const defaultSettings = getDefaultThrottleSettings();
+
+      const limit = endpointConfig?.limit ?? defaultSettings.limit;
+      const ttlMs = endpointConfig?.ttlMs ?? defaultSettings.ttlMs;
+
+      if (!defaultSettings.enabled || limit <= 0 || ttlMs <= 0) {
+         return true;
+      }
+
+      const key = this.buildThrottleKey(request);
+      const count = await this.incrementRequestCount(key, ttlMs);
+
+      if (count > limit) {
+         throw new CustomError(
+            'Too many requests. Please try again later.',
+            HttpStatus.TOO_MANY_REQUESTS,
+            ErrorCode.RATE_LIMIT_EXCEEDED
+         );
+      }
+
       return true;
-    }
+   }
 
-    const endpointConfig = this.reflector.getAllAndOverride<ThrottleConfig>(THROTTLE_METADATA_KEY, [
-      context.getHandler(),
-      context.getClass()
-    ]);
-    const defaultSettings = getDefaultThrottleSettings();
+   private buildThrottleKey(request: Request): string {
+      const method = request.method || 'UNKNOWN';
+      const routePath = request.route?.path || request.path || request.originalUrl || 'unknown-path';
+      const ipAddress = this.getClientIp(request);
 
-    const limit = endpointConfig?.limit ?? defaultSettings.limit;
-    const ttlMs = endpointConfig?.ttlMs ?? defaultSettings.ttlMs;
+      return `${ipAddress}:${method}:${routePath}`;
+   }
 
-    if (!defaultSettings.enabled || limit <= 0 || ttlMs <= 0) {
-      return true;
-    }
+   private getClientIp(request: Request): string {
+      const forwardedFor = request.headers['x-forwarded-for'];
 
-    const key = this.buildThrottleKey(request);
-    const count = await this.incrementRequestCount(key, ttlMs);
+      if (this.trustProxyEnabled) {
+         if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+            return forwardedFor.split(',')[0].trim();
+         }
 
-    if (count > limit) {
-      throw new CustomError(
-        'Too many requests. Please try again later.',
-        HttpStatus.TOO_MANY_REQUESTS,
-        ErrorCode.RATE_LIMIT_EXCEEDED
-      );
-    }
-
-    return true;
-  }
-
-  private buildThrottleKey(request: Request): string {
-    const method = request.method || 'UNKNOWN';
-    const routePath = request.route?.path || request.path || request.originalUrl || 'unknown-path';
-    const ipAddress = this.getClientIp(request);
-
-    return `${ipAddress}:${method}:${routePath}`;
-  }
-
-  private getClientIp(request: Request): string {
-    const forwardedFor = request.headers['x-forwarded-for'];
-
-    if (this.trustProxyEnabled) {
-      if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
-        return forwardedFor.split(',')[0].trim();
+         if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
+            return forwardedFor[0].split(',')[0].trim();
+         }
       }
 
-      if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
-        return forwardedFor[0].split(',')[0].trim();
-      }
-    }
+      return request.ip || request.socket.remoteAddress || 'unknown-ip';
+   }
 
-    return request.ip || request.socket.remoteAddress || 'unknown-ip';
-  }
+   private cleanupExpiredWindows(): void {
+      const now = Date.now();
 
-  private cleanupExpiredWindows(): void {
-    const now = Date.now();
-
-    if (this.windows.size < 500) {
-      return;
-    }
-
-    for (const [key, state] of this.windows.entries()) {
-      if (state.resetAt <= now) {
-        this.windows.delete(key);
-      }
-    }
-  }
-
-  private async incrementRequestCount(key: string, ttlMs: number): Promise<number> {
-    const redisCount = await this.incrementRedisCount(key, ttlMs);
-    if (redisCount !== null) {
-      return redisCount;
-    }
-
-    return this.incrementInMemoryCount(key, ttlMs);
-  }
-
-  private async incrementRedisCount(key: string, ttlMs: number): Promise<number | null> {
-    if (!this.redisThrottleEnabled) {
-      return null;
-    }
-
-    try {
-      const redisClient = await this.getRedisClient();
-      if (!redisClient) {
-        return null;
+      if (this.windows.size < 500) {
+         return;
       }
 
-      const redisKey = `throttle:${key}`;
-      const currentCount = await redisClient.incr(redisKey);
+      for (const [key, state] of this.windows.entries()) {
+         if (state.resetAt <= now) {
+            this.windows.delete(key);
+         }
+      }
+   }
 
-      if (currentCount === 1) {
-        await redisClient.pexpire(redisKey, ttlMs);
+   private async incrementRequestCount(key: string, ttlMs: number): Promise<number> {
+      const redisCount = await this.incrementRedisCount(key, ttlMs);
+      if (redisCount !== null) {
+         return redisCount;
       }
 
-      return currentCount;
-    } catch {
-      return null;
-    }
-  }
+      return this.incrementInMemoryCount(key, ttlMs);
+   }
 
-  private incrementInMemoryCount(key: string, ttlMs: number): number {
-    this.cleanupExpiredWindows();
+   private async incrementRedisCount(key: string, ttlMs: number): Promise<number | null> {
+      if (!this.redisThrottleEnabled) {
+         return null;
+      }
 
-    const now = Date.now();
-    const activeWindow = this.windows.get(key);
+      try {
+         const redisClient = await this.getRedisClient();
+         if (!redisClient) {
+            return null;
+         }
 
-    if (!activeWindow || activeWindow.resetAt <= now) {
-      this.windows.set(key, {
-        count: 1,
-        resetAt: now + ttlMs
-      });
-      return 1;
-    }
+         const redisKey = `throttle:${key}`;
+         const currentCount = await redisClient.incr(redisKey);
 
-    activeWindow.count += 1;
-    this.windows.set(key, activeWindow);
+         if (currentCount === 1) {
+            await redisClient.pexpire(redisKey, ttlMs);
+         }
 
-    return activeWindow.count;
-  }
+         return currentCount;
+      } catch {
+         return null;
+      }
+   }
 
-  private async getRedisClient(): Promise<Redis | null> {
-    if (!this.redisThrottleEnabled) {
-      return null;
-    }
+   private incrementInMemoryCount(key: string, ttlMs: number): number {
+      this.cleanupExpiredWindows();
 
-    if (!this.redisClient) {
-      this.redisClient = new Redis({
-        ...getRedisConnection(),
-        lazyConnect: true,
-        maxRetriesPerRequest: 1
-      });
-    }
+      const now = Date.now();
+      const activeWindow = this.windows.get(key);
 
-    if (this.redisClient.status === 'wait') {
-      await this.redisClient.connect();
-    }
+      if (!activeWindow || activeWindow.resetAt <= now) {
+         this.windows.set(key, {
+            count: 1,
+            resetAt: now + ttlMs
+         });
+         return 1;
+      }
 
-    return this.redisClient;
-  }
+      activeWindow.count += 1;
+      this.windows.set(key, activeWindow);
 
-  async onModuleDestroy(): Promise<void> {
-    if (this.redisClient) {
-      await this.redisClient.quit();
-      this.redisClient = undefined;
-    }
-  }
+      return activeWindow.count;
+   }
+
+   private async getRedisClient(): Promise<Redis | null> {
+      if (!this.redisThrottleEnabled) {
+         return null;
+      }
+
+      if (!this.redisClient) {
+         this.redisClient = new Redis({
+            ...getRedisConnection(),
+            lazyConnect: true,
+            maxRetriesPerRequest: 1
+         });
+      }
+
+      if (this.redisClient.status === 'wait') {
+         await this.redisClient.connect();
+      }
+
+      return this.redisClient;
+   }
+
+   async onModuleDestroy(): Promise<void> {
+      if (this.redisClient) {
+         await this.redisClient.quit();
+         this.redisClient = undefined;
+      }
+   }
 }
 

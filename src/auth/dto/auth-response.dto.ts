@@ -2,27 +2,27 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthUserDto {
   @ApiProperty({ example: 'user-123' })
-  sub: string;
+     sub: string;
 
   @ApiProperty({ example: 'admin@example.com' })
-  email: string;
+     email: string;
 
   @ApiProperty({ type: [String], example: ['admin'] })
-  roles: string[];
+     roles: string[];
 
   @ApiProperty({ type: [String], example: ['app:read', 'app:manage'] })
-  permissions: string[];
+     permissions: string[];
 }
 
 export class AuthResponseDto {
   @ApiProperty()
-  accessToken: string;
+     accessToken: string;
 
   @ApiProperty({ example: 3600 })
-  expiresIn: number;
+     expiresIn: number;
 
   @ApiProperty({ type: AuthUserDto })
-  user: AuthUserDto;
+     user: AuthUserDto;
 }
 
 

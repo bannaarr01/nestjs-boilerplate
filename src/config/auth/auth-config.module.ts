@@ -9,34 +9,34 @@ import { ResourcePermissionGuard } from '../../common/guards/resource-permission
 
 @Module({})
 export class AuthConfigModule {
-  static forRoot(): DynamicModule {
-    return {
-      module: AuthConfigModule,
-      imports: [AuthModule],
-      providers: [
-        {
-          provide: APP_GUARD,
-          useClass: ApiKeyGuard
-        },
-        {
-          provide: APP_GUARD,
-          useClass: ThrottleGuard
-        },
-        {
-          provide: APP_GUARD,
-          useClass: JwtAuthGuard
-        },
-        {
-          provide: APP_GUARD,
-          useClass: RolesGuard
-        },
-        {
-          provide: APP_GUARD,
-          useClass: ResourcePermissionGuard
-        }
-      ],
-      exports: [AuthModule]
-    };
-  }
+   static forRoot(): DynamicModule {
+      return {
+         module: AuthConfigModule,
+         imports: [AuthModule],
+         providers: [
+            {
+               provide: APP_GUARD,
+               useClass: ApiKeyGuard
+            },
+            {
+               provide: APP_GUARD,
+               useClass: ThrottleGuard
+            },
+            {
+               provide: APP_GUARD,
+               useClass: JwtAuthGuard
+            },
+            {
+               provide: APP_GUARD,
+               useClass: RolesGuard
+            },
+            {
+               provide: APP_GUARD,
+               useClass: ResourcePermissionGuard
+            }
+         ],
+         exports: [AuthModule]
+      };
+   }
 }
 

@@ -2,30 +2,30 @@ import { Embeddable, OptionalProps, Property } from '@mikro-orm/core';
 
 @Embeddable()
 export class Auditable {
-  [OptionalProps]?: 'createdBy' | 'updatedAt' | 'updatedBy' | 'deletedAt' | 'deletedBy';
+   [OptionalProps]?: 'createdBy' | 'updatedAt' | 'updatedBy' | 'deletedAt' | 'deletedBy';
 
   @Property({ onCreate: () => new Date() })
-  createdAt: Date = new Date();
+     createdAt: Date = new Date();
 
   @Property({ length: 120, nullable: true })
-  createdBy?: string;
+     createdBy?: string;
 
   @Property({ onUpdate: () => new Date(), nullable: true })
-  updatedAt?: Date;
+     updatedAt?: Date;
 
   @Property({ length: 120, nullable: true })
-  updatedBy?: string;
+     updatedBy?: string;
 
   @Property({ nullable: true })
-  deletedAt?: Date;
+     deletedAt?: Date;
 
   @Property({ length: 120, nullable: true })
-  deletedBy?: string;
+     deletedBy?: string;
 
   constructor(createdBy?: string) {
-    if (createdBy) {
-      this.createdBy = createdBy;
-    }
+     if (createdBy) {
+        this.createdBy = createdBy;
+     }
   }
 }
 

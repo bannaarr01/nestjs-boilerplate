@@ -2,28 +2,28 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class QueueMetricsDto {
   @ApiProperty({ example: 'general' })
-  queueName: string;
+     queueName: string;
 
   @ApiProperty({ example: 3 })
-  waiting: number;
+     waiting: number;
 
   @ApiProperty({ example: 1 })
-  active: number;
+     active: number;
 
   @ApiProperty({ example: 42 })
-  completed: number;
+     completed: number;
 
   @ApiProperty({ example: 2 })
-  failed: number;
+     failed: number;
 
   @ApiProperty({ example: 0 })
-  delayed: number;
+     delayed: number;
 
   @ApiProperty({ example: false })
-  paused: boolean;
+     paused: boolean;
 
   @ApiProperty({ example: 48 })
-  total: number;
+     total: number;
 }
 
 

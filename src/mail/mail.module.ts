@@ -9,34 +9,34 @@ import { ConsoleMailProvider } from './providers/console-mail.provider';
 import { SendGridMailProvider } from './providers/sendgrid-mail.provider';
 
 @Module({
-  imports: [CommonModule],
-  providers: [
-    {
-      provide: MAIL_PROVIDER_TOKEN,
-      useFactory: (consoleProvider: ConsoleMailProvider) => {
-        const provider = (process.env.MAIL_PROVIDER || 'console').toLowerCase();
+   imports: [CommonModule],
+   providers: [
+      {
+         provide: MAIL_PROVIDER_TOKEN,
+         useFactory: (consoleProvider: ConsoleMailProvider) => {
+            const provider = (process.env.MAIL_PROVIDER || 'console').toLowerCase();
 
-        if (provider === 'sendgrid') {
-          return new SendGridMailProvider();
-        }
+            if (provider === 'sendgrid') {
+               return new SendGridMailProvider();
+            }
 
-        if (provider === 'smtp') {
-          return new SmtpMailProvider();
-        }
+            if (provider === 'smtp') {
+               return new SmtpMailProvider();
+            }
 
-        if (provider === 'ses') {
-          return new SesMailProvider();
-        }
+            if (provider === 'ses') {
+               return new SesMailProvider();
+            }
 
-        return consoleProvider;
+            return consoleProvider;
+         },
+         inject: [ConsoleMailProvider]
       },
-      inject: [ConsoleMailProvider]
-    },
-    ConsoleMailProvider,
-    MailTemplateService,
-    MailService
-  ],
-  exports: [MailService]
+      ConsoleMailProvider,
+      MailTemplateService,
+      MailService
+   ],
+   exports: [MailService]
 })
 export class MailModule {}
 

@@ -9,31 +9,31 @@ type MigrationDiff = {
 type SupportedDbClient = 'postgresql' | 'mysql';
 
 function normalizeDbClient(value?: string): SupportedDbClient {
-  const normalizedValue = (value || 'postgresql').toLowerCase();
+   const normalizedValue = (value || 'postgresql').toLowerCase();
 
-  if (['postgres', 'postgresql', 'pg'].includes(normalizedValue)) {
-    return 'postgresql';
-  }
+   if (['postgres', 'postgresql', 'pg'].includes(normalizedValue)) {
+      return 'postgresql';
+   }
 
-  if (['mysql', 'mariadb'].includes(normalizedValue)) {
-    return 'mysql';
-  }
+   if (['mysql', 'mariadb'].includes(normalizedValue)) {
+      return 'mysql';
+   }
 
-  throw new Error(
-    `Unsupported DB_CLIENT: ${value}. Use one of: postgres, postgresql, pg, mysql, mariadb`
-  );
+   throw new Error(
+      `Unsupported DB_CLIENT: ${value}. Use one of: postgres, postgresql, pg, mysql, mariadb`
+   );
 }
 
 function parseCsvEnv(value?: string): string[] {
-  if (!value) {
-    return [];
-  }
+   if (!value) {
+      return [];
+   }
 
-  return value
-    .split(',')
-    .map(item => item.trim())
-    .filter(Boolean)
-    .map(item => item.toLowerCase());
+   return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean)
+      .map(item => item.toLowerCase());
 }
 
 /**
@@ -45,66 +45,66 @@ function parseCsvEnv(value?: string): string[] {
  * - DB_MIGRATION_EXCLUDED_SCHEMAS=schema_a,schema_b
  */
 export class CustomMigrationGenerator extends TSMigrationGenerator {
-  private readonly dbClient = normalizeDbClient(process.env.DB_CLIENT);
-  private readonly includedTables = parseCsvEnv(process.env.DB_MIGRATION_INCLUDED_TABLES);
-  private readonly excludedSchemas = parseCsvEnv(process.env.DB_MIGRATION_EXCLUDED_SCHEMAS);
+   private readonly dbClient = normalizeDbClient(process.env.DB_CLIENT);
+   private readonly includedTables = parseCsvEnv(process.env.DB_MIGRATION_INCLUDED_TABLES);
+   private readonly excludedSchemas = parseCsvEnv(process.env.DB_MIGRATION_EXCLUDED_SCHEMAS);
 
-  generateMigrationFile(className: string, diff: MigrationDiff): string {
-    return super.generateMigrationFile(className, this.filterDiff(diff));
-  }
+   generateMigrationFile(className: string, diff: MigrationDiff): string {
+      return super.generateMigrationFile(className, this.filterDiff(diff));
+   }
 
-  createStatement(sql: string, padLeft: number): string {
-    const sqlLanguage = this.dbClient === 'postgresql' ? 'postgresql' : 'mysql';
-    let formattedSql = format(sql, { language: sqlLanguage });
+   createStatement(sql: string, padLeft: number): string {
+      const sqlLanguage = this.dbClient === 'postgresql' ? 'postgresql' : 'mysql';
+      let formattedSql = format(sql, { language: sqlLanguage });
 
-    if (this.dbClient === 'postgresql') {
-      formattedSql = formattedSql.replace(/default\s+'NULL'/gi, 'default NULL').replace(/`([^`]+)`/g, '"$1"');
-    }
+      if (this.dbClient === 'postgresql') {
+         formattedSql = formattedSql.replace(/default\s+'NULL'/gi, 'default NULL').replace(/`([^`]+)`/g, '"$1"');
+      }
 
-    return super.createStatement(formattedSql.replace(/\n/g, ' '), padLeft);
-  }
+      return super.createStatement(formattedSql.replace(/\n/g, ' '), padLeft);
+   }
 
-  private filterDiff(diff: MigrationDiff): MigrationDiff {
-    return {
-      up: diff.up.filter(sql => this.shouldIncludeSql(sql)),
-      down: diff.down.filter(sql => this.shouldIncludeSql(sql))
-    };
-  }
+   private filterDiff(diff: MigrationDiff): MigrationDiff {
+      return {
+         up: diff.up.filter(sql => this.shouldIncludeSql(sql)),
+         down: diff.down.filter(sql => this.shouldIncludeSql(sql))
+      };
+   }
 
-  private shouldIncludeSql(sql: string): boolean {
-    const normalizedSql = sql.toLowerCase();
+   private shouldIncludeSql(sql: string): boolean {
+      const normalizedSql = sql.toLowerCase();
 
-    if (this.includedTables.length > 0) {
-      const hasIncludedTable = this.includedTables.some(table => {
-        return (
-          normalizedSql.includes(`"${table}"`) ||
+      if (this.includedTables.length > 0) {
+         const hasIncludedTable = this.includedTables.some(table => {
+            return (
+               normalizedSql.includes(`"${table}"`) ||
           normalizedSql.includes(`\`${table}\``) ||
           normalizedSql.includes(`.${table}`) ||
           normalizedSql.includes(` ${table}`)
-        );
-      });
+            );
+         });
 
-      if (!hasIncludedTable) {
-        return false;
+         if (!hasIncludedTable) {
+            return false;
+         }
       }
-    }
 
-    if (this.excludedSchemas.length > 0) {
-      const usesExcludedSchema = this.excludedSchemas.some(schema => {
-        return (
-          normalizedSql.includes(`"${schema}".`) ||
+      if (this.excludedSchemas.length > 0) {
+         const usesExcludedSchema = this.excludedSchemas.some(schema => {
+            return (
+               normalizedSql.includes(`"${schema}".`) ||
           normalizedSql.includes(`\`${schema}\`.`) ||
           normalizedSql.includes(`${schema}.`)
-        );
-      });
+            );
+         });
 
-      if (usesExcludedSchema) {
-        return false;
+         if (usesExcludedSchema) {
+            return false;
+         }
       }
-    }
 
-    return true;
-  }
+      return true;
+   }
 }
 
 

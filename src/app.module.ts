@@ -16,22 +16,22 @@ import { QueueConfigModule } from './config/queue/queue-config.module';
 import { DbMigrationModule } from './database/migrations/db-migration.module';
 
 @Module({
-  imports: [
-    MikroOrmModule.forRoot(mikroOrmConfig),
-    CommonModule,
-    ProxyModule,
-    MailModule,
-    StorageModule,
-    QueueModule,
-    AttachmentModule,
-    QueueConfigModule.forRoot(),
-    AuthConfigModule.forRoot(),
-    LoggingModule,
-    DbMigrationModule,
-    DbSeederModule
-  ],
-  controllers: [AppController],
-  providers: [AppService]
+   imports: [
+      MikroOrmModule.forRoot(mikroOrmConfig),
+      CommonModule,
+      ProxyModule,
+      MailModule,
+      StorageModule,
+      QueueModule,
+      AttachmentModule,
+      QueueConfigModule.forRoot(),
+      AuthConfigModule.forRoot(),
+      LoggingModule,
+      DbMigrationModule,
+      DbSeederModule
+   ],
+   controllers: [AppController],
+   providers: [AppService]
 })
 export class AppModule {}
 

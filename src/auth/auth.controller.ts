@@ -15,48 +15,48 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Version } from '@nes
 @Controller('auth')
 @ApiBearerAuth()
 export class AuthController {
-  constructor(
+   constructor(
     private readonly authService: AuthService,
     private readonly errorHandler: ErrorHandlerService
-  ) {}
+   ) {}
 
   @Public()
   @Post('login')
   @Version(ApiVersion.ONE)
   @HttpCode(HttpStatus.OK)
   @ApiOperationAndResponses({
-    summary: 'Login user',
-    description: 'Simple boilerplate login endpoint for local/dev use.',
-    responseModel: AuthResponseDto,
-    responseDescriptions: {
-      [HttpStatus.OK]: 'Returns access token and authenticated user',
-      [HttpStatus.UNAUTHORIZED]: 'Invalid credentials'
-    }
+     summary: 'Login user',
+     description: 'Simple boilerplate login endpoint for local/dev use.',
+     responseModel: AuthResponseDto,
+     responseDescriptions: {
+        [HttpStatus.OK]: 'Returns access token and authenticated user',
+        [HttpStatus.UNAUTHORIZED]: 'Invalid credentials'
+     }
   })
-  async login(@Body() loginDto: LoginDto): Promise<ApiResponse<AuthResponseDto>> {
-    try {
-      const data = await this.authService.login(loginDto);
-      return new ApiResponse(data);
-    } catch (error) {
-      this.errorHandler.handleControllerError(error, AuthController, '.login');
-    }
-  }
+   async login(@Body() loginDto: LoginDto): Promise<ApiResponse<AuthResponseDto>> {
+      try {
+         const data = await this.authService.login(loginDto);
+         return new ApiResponse(data);
+      } catch (error) {
+         this.errorHandler.handleControllerError(error, AuthController, '.login');
+      }
+   }
 
   @Get('me')
   @Version(ApiVersion.ONE)
   @HttpCode(HttpStatus.OK)
   @ApiOperationAndResponses({
-    summary: 'Get authenticated user',
-    description: 'Returns user data from JWT payload.',
-    responseModel: AuthUserDto
+     summary: 'Get authenticated user',
+     description: 'Returns user data from JWT payload.',
+     responseModel: AuthUserDto
   })
   getMe(@AuthenticatedUser() currentUser: AuthUser): ApiResponse<AuthUserDto> {
-    try {
-      const data = this.authService.getAuthenticatedUser(currentUser);
-      return new ApiResponse(data);
-    } catch (error) {
-      this.errorHandler.handleControllerError(error, AuthController, '.getMe');
-    }
+     try {
+        const data = this.authService.getAuthenticatedUser(currentUser);
+        return new ApiResponse(data);
+     } catch (error) {
+        this.errorHandler.handleControllerError(error, AuthController, '.getMe');
+     }
   }
 }
 

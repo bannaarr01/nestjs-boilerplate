@@ -5,43 +5,43 @@ import { Embedded, Entity, Index, OptionalProps, PrimaryKey, Property } from '@m
 @Entity({ tableName: 'attachments' })
 @Index({ properties: ['entityType', 'entityId'] })
 export class AttachmentEntity {
-  [OptionalProps]?: 'id' | 'uuid' | 'checksum' | 'description' | 'metadata';
+   [OptionalProps]?: 'id' | 'uuid' | 'checksum' | 'description' | 'metadata';
 
   @PrimaryKey()
-  id!: number;
+     id!: number;
 
   @Property({ type: 'string', length: 36, unique: true, onCreate: () => randomUUID() })
-  uuid!: string;
+     uuid!: string;
 
   @Property({ length: 80 })
-  entityType!: string;
+     entityType!: string;
 
   @Property({ length: 80 })
-  entityId!: string;
+     entityId!: string;
 
   @Property({ length: 255 })
-  originalFileName!: string;
+     originalFileName!: string;
 
   @Property({ length: 255, unique: true })
-  storageKey!: string;
+     storageKey!: string;
 
   @Property({ length: 120 })
-  mimeType!: string;
+     mimeType!: string;
 
   @Property({ type: 'bigint' })
-  fileSize!: number;
+     fileSize!: number;
 
   @Property({ length: 64, nullable: true })
-  checksum?: string;
+     checksum?: string;
 
   @Property({ type: 'text', nullable: true })
-  description?: string;
+     description?: string;
 
   @Property({ type: 'json', nullable: true })
-  metadata?: Record<string, unknown>;
+     metadata?: Record<string, unknown>;
 
   @Embedded(() => Auditable, { prefix: false })
-  audit!: Auditable;
+     audit!: Auditable;
 }
 
 

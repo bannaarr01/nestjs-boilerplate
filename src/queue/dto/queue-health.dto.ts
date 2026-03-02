@@ -2,19 +2,19 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class QueueHealthDto {
   @ApiProperty({ example: true })
-  enabled: boolean;
+     enabled: boolean;
 
   @ApiProperty({ example: true })
-  healthy: boolean;
+     healthy: boolean;
 
   @ApiProperty({ example: 'ready' })
-  status: string;
+     status: string;
 
   @ApiProperty({ example: 'general' })
-  queueName: string;
+     queueName: string;
 
   @ApiPropertyOptional({ example: 'Connection refused' })
-  errorMessage?: string;
+     errorMessage?: string;
 }
 
 

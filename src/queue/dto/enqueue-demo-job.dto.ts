@@ -3,12 +3,12 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class EnqueueDemoJobDto {
   @ApiPropertyOptional({
-    example: 'sample payload'
+     example: 'sample payload'
   })
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  payload?: string;
+     payload?: string;
 }
 
 

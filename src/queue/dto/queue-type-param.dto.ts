@@ -5,6 +5,6 @@ export class QueueTypeParamDto {
   @ApiProperty({ example: 'general' })
   @IsString()
   @IsNotEmpty()
-  queueType: string;
+     queueType: string;
 }
 

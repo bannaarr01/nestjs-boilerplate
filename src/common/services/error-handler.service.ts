@@ -20,190 +20,190 @@ type ErrorLike = {
 
 @Injectable()
 export class ErrorHandlerService {
-  constructor(private readonly logger: LoggingService) {}
+   constructor(private readonly logger: LoggingService) {}
 
-  handleControllerError<T>(error: unknown, contextClass: ClassConstructor<T>, context: string): never {
-    const errorLike = this.asErrorLike(error);
-    const errorMessage = this.getErrorMessage(error);
+   handleControllerError<T>(error: unknown, contextClass: ClassConstructor<T>, context: string): never {
+      const errorLike = this.asErrorLike(error);
+      const errorMessage = this.getErrorMessage(error);
 
-    this.logger.getLogger().error(errorMessage, {
-      label: `${contextClass.name}${context}`,
-      stack: errorLike.stack
-    });
+      this.logger.getLogger().error(errorMessage, {
+         label: `${contextClass.name}${context}`,
+         stack: errorLike.stack
+      });
 
-    if (error instanceof HttpException) {
-      const statusCode = error.getStatus();
-      const response = error.getResponse();
-      const message =
+      if (error instanceof HttpException) {
+         const statusCode = error.getStatus();
+         const response = error.getResponse();
+         const message =
         typeof response === 'string'
-          ? response
-          : (response as { message?: string | string[] }).message || errorMessage;
-      const normalizedMessage = Array.isArray(message) ? message.join(', ') : message;
-      const errorCode =
+           ? response
+           : (response as { message?: string | string[] }).message || errorMessage;
+         const normalizedMessage = Array.isArray(message) ? message.join(', ') : message;
+         const errorCode =
         this.asErrorLike(response).errorCode || ErrorCodeUtil.getErrorCodeForStatus(statusCode);
 
+         throw new HttpException(
+            {
+               statusCode,
+               message: normalizedMessage,
+               errorCode
+            },
+            statusCode
+         );
+      }
+
+      const statusCode = errorLike.statusCode || errorLike.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      const message = errorLike.customErrMsg || errorLike.message || 'Internal Server Error';
+      const errorCode = errorLike.errorCode || ErrorCodeUtil.getErrorCodeForStatus(statusCode);
+
       throw new HttpException(
-        {
-          statusCode,
-          message: normalizedMessage,
-          errorCode
-        },
-        statusCode
+         {
+            statusCode,
+            message,
+            errorCode
+         },
+         statusCode
       );
-    }
+   }
 
-    const statusCode = errorLike.statusCode || errorLike.status || HttpStatus.INTERNAL_SERVER_ERROR;
-    const message = errorLike.customErrMsg || errorLike.message || 'Internal Server Error';
-    const errorCode = errorLike.errorCode || ErrorCodeUtil.getErrorCodeForStatus(statusCode);
+   throwCustomError(
+      customErrMsg: string,
+      statusCode: number = HttpStatus.INTERNAL_SERVER_ERROR,
+      errorCode?: ErrorCode
+   ): never {
+      const code = errorCode || ErrorCodeUtil.getErrorCodeForStatus(statusCode);
+      throw new CustomError(customErrMsg, statusCode, code);
+   }
 
-    throw new HttpException(
-      {
-        statusCode,
-        message,
-        errorCode
-      },
-      statusCode
-    );
-  }
+   handleServiceError<T>(error: unknown, contextClass: ClassConstructor<T>, context: string): Error {
+      const errorLike = this.asErrorLike(error);
+      const errorMessage = this.getErrorMessage(error);
 
-  throwCustomError(
-    customErrMsg: string,
-    statusCode: number = HttpStatus.INTERNAL_SERVER_ERROR,
-    errorCode?: ErrorCode
-  ): never {
-    const code = errorCode || ErrorCodeUtil.getErrorCodeForStatus(statusCode);
-    throw new CustomError(customErrMsg, statusCode, code);
-  }
+      this.logger.getLogger().error(errorMessage, {
+         label: `${contextClass.name}${context}`,
+         stack: errorLike.stack,
+         errorType: errorLike.constructor?.name || errorLike.name
+      });
 
-  handleServiceError<T>(error: unknown, contextClass: ClassConstructor<T>, context: string): Error {
-    const errorLike = this.asErrorLike(error);
-    const errorMessage = this.getErrorMessage(error);
+      if (error instanceof CustomError) {
+         return error;
+      }
 
-    this.logger.getLogger().error(errorMessage, {
-      label: `${contextClass.name}${context}`,
-      stack: errorLike.stack,
-      errorType: errorLike.constructor?.name || errorLike.name
-    });
+      if (this.isDuplicateError(errorMessage)) {
+         return new CustomError(
+            'A record with the same details already exists',
+            HttpStatus.CONFLICT,
+            ErrorCode.DUPLICATE_RECORD
+         );
+      }
 
-    if (error instanceof CustomError) {
-      return error;
-    }
+      if (this.isNotFoundError(errorMessage)) {
+         return new CustomError(
+            'Requested resource not found',
+            HttpStatus.NOT_FOUND,
+            ErrorCode.RESOURCE_NOT_FOUND
+         );
+      }
 
-    if (this.isDuplicateError(errorMessage)) {
+      if (this.isUnauthorizedError(errorMessage, errorLike)) {
+         return new CustomError('Unauthorized request', HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
+      }
+
+      if (this.isForbiddenError(errorMessage, errorLike)) {
+         return new CustomError('Insufficient permissions', HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN);
+      }
+
+      if (this.isTimeoutError(errorMessage, errorLike)) {
+         return new CustomError('Operation timed out', HttpStatus.REQUEST_TIMEOUT, ErrorCode.PAYMENT_TIMEOUT);
+      }
+
+      if (this.isServiceUnavailableError(errorMessage, errorLike)) {
+         return new CustomError(
+            'Service temporarily unavailable',
+            HttpStatus.SERVICE_UNAVAILABLE,
+            ErrorCode.SERVICE_UNAVAILABLE
+         );
+      }
+
       return new CustomError(
-        'A record with the same details already exists',
-        HttpStatus.CONFLICT,
-        ErrorCode.DUPLICATE_RECORD
+         'Internal Server Error',
+         HttpStatus.INTERNAL_SERVER_ERROR,
+         ErrorCode.INTERNAL_SERVER_ERROR
       );
-    }
+   }
 
-    if (this.isNotFoundError(errorMessage)) {
-      return new CustomError(
-        'Requested resource not found',
-        HttpStatus.NOT_FOUND,
-        ErrorCode.RESOURCE_NOT_FOUND
-      );
-    }
+   private getErrorMessage(error: unknown): string {
+      if (!error) {
+         return 'Unknown error occurred';
+      }
 
-    if (this.isUnauthorizedError(errorMessage, errorLike)) {
-      return new CustomError('Unauthorized request', HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
-    }
+      if (typeof error === 'string') {
+         return error;
+      }
 
-    if (this.isForbiddenError(errorMessage, errorLike)) {
-      return new CustomError('Insufficient permissions', HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN);
-    }
+      const errorLike = this.asErrorLike(error);
 
-    if (this.isTimeoutError(errorMessage, errorLike)) {
-      return new CustomError('Operation timed out', HttpStatus.REQUEST_TIMEOUT, ErrorCode.PAYMENT_TIMEOUT);
-    }
+      if (errorLike.customErrMsg) {
+         return errorLike.customErrMsg;
+      }
 
-    if (this.isServiceUnavailableError(errorMessage, errorLike)) {
-      return new CustomError(
-        'Service temporarily unavailable',
-        HttpStatus.SERVICE_UNAVAILABLE,
-        ErrorCode.SERVICE_UNAVAILABLE
-      );
-    }
+      if (errorLike.message) {
+         return errorLike.message;
+      }
 
-    return new CustomError(
-      'Internal Server Error',
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      ErrorCode.INTERNAL_SERVER_ERROR
-    );
-  }
+      if (errorLike.error?.message) {
+         return errorLike.error.message;
+      }
 
-  private getErrorMessage(error: unknown): string {
-    if (!error) {
-      return 'Unknown error occurred';
-    }
+      return 'An unexpected error occurred';
+   }
 
-    if (typeof error === 'string') {
-      return error;
-    }
+   private isDuplicateError(errorMessage: string): boolean {
+      const value = errorMessage.toLowerCase();
+      return value.includes('duplicate') || value.includes('already exists') || value.includes('unique');
+   }
 
-    const errorLike = this.asErrorLike(error);
+   private isNotFoundError(errorMessage: string): boolean {
+      const value = errorMessage.toLowerCase();
+      return value.includes('not found') || value.includes('does not exist') || value.includes('entity not found');
+   }
 
-    if (errorLike.customErrMsg) {
-      return errorLike.customErrMsg;
-    }
+   private isUnauthorizedError(errorMessage: string, errorLike: ErrorLike): boolean {
+      const value = errorMessage.toLowerCase();
+      return value.includes('unauthorized') || errorLike.status === HttpStatus.UNAUTHORIZED;
+   }
 
-    if (errorLike.message) {
-      return errorLike.message;
-    }
-
-    if (errorLike.error?.message) {
-      return errorLike.error.message;
-    }
-
-    return 'An unexpected error occurred';
-  }
-
-  private isDuplicateError(errorMessage: string): boolean {
-    const value = errorMessage.toLowerCase();
-    return value.includes('duplicate') || value.includes('already exists') || value.includes('unique');
-  }
-
-  private isNotFoundError(errorMessage: string): boolean {
-    const value = errorMessage.toLowerCase();
-    return value.includes('not found') || value.includes('does not exist') || value.includes('entity not found');
-  }
-
-  private isUnauthorizedError(errorMessage: string, errorLike: ErrorLike): boolean {
-    const value = errorMessage.toLowerCase();
-    return value.includes('unauthorized') || errorLike.status === HttpStatus.UNAUTHORIZED;
-  }
-
-  private isForbiddenError(errorMessage: string, errorLike: ErrorLike): boolean {
-    const value = errorMessage.toLowerCase();
-    return (
-      value.includes('forbidden') ||
+   private isForbiddenError(errorMessage: string, errorLike: ErrorLike): boolean {
+      const value = errorMessage.toLowerCase();
+      return (
+         value.includes('forbidden') ||
       value.includes('insufficient permission') ||
       errorLike.status === HttpStatus.FORBIDDEN
-    );
-  }
+      );
+   }
 
-  private isTimeoutError(errorMessage: string, errorLike: ErrorLike): boolean {
-    const value = errorMessage.toLowerCase();
-    return value.includes('timeout') || errorLike.code === 'ETIMEDOUT';
-  }
+   private isTimeoutError(errorMessage: string, errorLike: ErrorLike): boolean {
+      const value = errorMessage.toLowerCase();
+      return value.includes('timeout') || errorLike.code === 'ETIMEDOUT';
+   }
 
-  private isServiceUnavailableError(errorMessage: string, errorLike: ErrorLike): boolean {
-    const value = errorMessage.toLowerCase();
-    return (
-      value.includes('connection refused') ||
+   private isServiceUnavailableError(errorMessage: string, errorLike: ErrorLike): boolean {
+      const value = errorMessage.toLowerCase();
+      return (
+         value.includes('connection refused') ||
       value.includes('cannot connect') ||
       value.includes('service unavailable') ||
       errorLike.code === 'ECONNREFUSED' ||
       errorLike.code === 'ENOTFOUND'
-    );
-  }
+      );
+   }
 
-  private asErrorLike(error: unknown): ErrorLike {
-    if (!error || typeof error !== 'object') {
-      return {};
-    }
+   private asErrorLike(error: unknown): ErrorLike {
+      if (!error || typeof error !== 'object') {
+         return {};
+      }
 
-    return error as ErrorLike;
-  }
+      return error as ErrorLike;
+   }
 }
 
