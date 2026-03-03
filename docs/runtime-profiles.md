@@ -25,6 +25,9 @@ npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=loca
 - `STORAGE_PROVIDER`
 - `MAIL_PROVIDER`
 
+Note:
+- Startup wrapper resolves `.env` from project root (`tools/run-command-with-db.js`), so values are consistent regardless of shell working directory.
+
 ## Example Profiles
 
 ## Local Postgres + No Redis

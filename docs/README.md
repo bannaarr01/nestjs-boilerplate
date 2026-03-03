@@ -7,6 +7,9 @@ This folder contains practical guides for using and extending the NestJS boilerp
 - [Runtime Profiles and Autowire Setup](./runtime-profiles.md)
 - [Environment Reference](./environment-reference.md)
 
+Repository note:
+- Use boilerplate as a starting template, then keep your service repo independent.
+
 ## Architecture and Conventions
 - [Architecture Overview](./architecture.md)
 - [API Conventions and Swagger](./api-conventions.md)

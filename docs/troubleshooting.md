@@ -10,6 +10,21 @@ Recommended fix:
 npm run setup:profile -- --db=postgres --schema=public
 ```
 
+## App fails with `Unable to acquire a connection`
+Use this checklist:
+1. Confirm DB credentials/host/port/database values in `.env`.
+2. Use `DB_HOST=127.0.0.1` for host-machine startup.
+3. Confirm schema exists and `DB_SCHEMA` is correct (for PostgreSQL).
+4. Keep `RUN_MIGRATIONS_ON_BOOT=false` temporarily for isolation.
+5. If needed, tune pool values:
+   - `DB_POOL_MAX=10`
+   - `DB_POOL_ACQUIRE_TIMEOUT_MS=10000`
+
+Quick runtime env check:
+```bash
+node tools/run-command-with-db.js node -e "console.log({DB_HOST:process.env.DB_HOST,DB_PORT:process.env.DB_PORT,DB_NAME:process.env.DB_NAME,DB_USER:process.env.DB_USER,DB_SCHEMA:process.env.DB_SCHEMA})"
+```
+
 ## `Invalid or missing API key`
 - Ensure request contains `x-api-key` header.
 - Ensure `API_KEY` exists in env.

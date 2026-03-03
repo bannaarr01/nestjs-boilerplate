@@ -16,6 +16,21 @@ cp .env.example .env
 npm install
 ```
 
+## 1.0 Repository Strategy (Important)
+You do not need to keep a Git link to the boilerplate repository.
+
+Recommended approach:
+1. Create your own service repo from this codebase.
+2. Keep your service as an independent Git repository.
+3. Pull boilerplate improvements manually only when you want them.
+
+If you cloned directly and want to detach from boilerplate remote:
+```bash
+git remote remove origin
+git remote add origin <your-new-repo-url>
+git push -u origin main
+```
+
 ## 1.1 Rename/Rebrand (Recommended)
 Update package and app branding so `nestjs-boilerplate` does not appear in runtime metadata.
 

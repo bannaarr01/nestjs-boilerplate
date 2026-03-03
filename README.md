@@ -36,6 +36,10 @@ cp .env.example .env
 npm install
 ```
 
+Git usage note:
+- New projects should be independent repositories.
+- You do not need to keep an active Git link to this boilerplate repo.
+
 ## 1.1 One-Time Skill Activation (Claude + Codex)
 
 Project skills are stored in `.claude/skills`. To make them available in Codex as well, run once:
@@ -97,6 +101,11 @@ Supported values:
 Use standard DB env keys for both clients:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`
 - `DB_SCHEMA` (required for PostgreSQL)
+- Connection pool tuning (optional): `DB_POOL_MIN`, `DB_POOL_MAX`, `DB_POOL_ACQUIRE_TIMEOUT_MS`, `DB_POOL_CREATE_TIMEOUT_MS`, `DB_POOL_IDLE_TIMEOUT_MS`
+
+DB connection notes:
+- Local development should use `DB_HOST=127.0.0.1` (preferred over `localhost`).
+- Startup wrapper reads `.env` from the project root explicitly.
 
 ## 3. Start
 

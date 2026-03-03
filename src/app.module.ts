@@ -8,7 +8,6 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { CommonModule } from './common/common.module';
 import { LoggingModule } from './logging/logging.module';
 import { StorageModule } from './storage/storage.module';
-import mikroOrmConfig from './config/database/mikro-orm.config';
 import { AttachmentModule } from './attachment/attachment.module';
 import { AuthConfigModule } from './config/auth/auth-config.module';
 import { DbSeederModule } from './database/seeders/db-seeder.module';
@@ -17,7 +16,7 @@ import { DbMigrationModule } from './database/migrations/db-migration.module';
 
 @Module({
    imports: [
-      MikroOrmModule.forRoot(mikroOrmConfig),
+      MikroOrmModule.forRoot(),
       CommonModule,
       ProxyModule,
       MailModule,

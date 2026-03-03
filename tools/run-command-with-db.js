@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
 const { spawn } = require('node:child_process');
+const path = require('node:path');
 const dotenv = require('dotenv');
 
-dotenv.config({ quiet: true });
+dotenv.config({
+  quiet: true,
+  path: path.resolve(__dirname, '..', '.env')
+});
 
 const DB_ALIASES = {
   postgres: 'postgresql',

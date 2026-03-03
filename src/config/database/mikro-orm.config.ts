@@ -47,6 +47,45 @@ function resolveDbPort(): number {
    return isPostgreSqlClient ? 5432 : 3306;
 }
 
+function resolveDbHost(): string {
+   const host = resolveDbValue('host', '127.0.0.1').trim();
+
+   // Prefer IPv4 loopback to avoid localhost/IPv6 resolver edge-cases on some systems.
+   return host === 'localhost' ? '127.0.0.1' : host;
+}
+
+function toPositiveInteger(value: string | undefined, fallback: number, minimum: number = 0): number {
+   const parsed = Number(value);
+   if (!Number.isFinite(parsed)) {
+      return fallback;
+   }
+
+   const normalized = Math.floor(parsed);
+   return normalized >= minimum ? normalized : fallback;
+}
+
+function resolvePoolConfig(): {
+   min: number;
+   max: number;
+   acquireTimeoutMillis: number;
+   createTimeoutMillis: number;
+   idleTimeoutMillis: number;
+   } {
+   const min = toPositiveInteger(process.env.DB_POOL_MIN, 0, 0);
+   const max = toPositiveInteger(process.env.DB_POOL_MAX, 10, 1);
+   const acquireTimeoutMillis = toPositiveInteger(process.env.DB_POOL_ACQUIRE_TIMEOUT_MS, 10000, 1000);
+   const createTimeoutMillis = toPositiveInteger(process.env.DB_POOL_CREATE_TIMEOUT_MS, 5000, 1000);
+   const idleTimeoutMillis = toPositiveInteger(process.env.DB_POOL_IDLE_TIMEOUT_MS, 30000, 1000);
+
+   return {
+      min: Math.min(min, max),
+      max,
+      acquireTimeoutMillis,
+      createTimeoutMillis,
+      idleTimeoutMillis
+   };
+}
+
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
    if (!value) {
       return defaultValue;
@@ -83,10 +122,11 @@ const commonConfig: Partial<Options> = {
    dbName: resolveDbValue('name', 'nestjs_boilerplate'),
    user: resolveDbValue('user', isPostgreSqlClient ? 'postgres' : 'root'),
    password: resolveDbValue('pass', isPostgreSqlClient ? 'postgres' : 'root'),
-   host: resolveDbValue('host', '127.0.0.1'),
+   host: resolveDbHost(),
    debug: parseBoolean(process.env.DB_DEBUG, false),
    connect: !isTest,
    allowGlobalContext: isTest,
+   pool: resolvePoolConfig(),
    metadataProvider: TsMorphMetadataProvider,
    entities: ['./dist/**/*.entity.js'],
    entitiesTs: ['src/**/*.entity.ts'],
@@ -118,11 +158,13 @@ const config: Options = {
          port: resolveDbPort(),
          schema: resolvePostgreSqlSchema(),
          driverOptions: {
-            connection: parseBoolean(process.env.DB_SSL, false)
-               ? {
-                  rejectUnauthorized: false
-               }
-               : false
+            connection: {
+               ssl: parseBoolean(process.env.DB_SSL, false)
+                  ? {
+                     rejectUnauthorized: false
+                  }
+                  : false
+            }
          }
       }
       : {
@@ -132,5 +174,3 @@ const config: Options = {
 } as Options;
 
 export default config;
-
-

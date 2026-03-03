@@ -50,6 +50,15 @@ Notes:
 - `DB_SCHEMA`: required for PostgreSQL
 - `DB_SSL`
 - `DB_DEBUG`
+- `DB_POOL_MIN`: minimum DB pool connections (default `0`)
+- `DB_POOL_MAX`: maximum DB pool connections (default `10`)
+- `DB_POOL_ACQUIRE_TIMEOUT_MS`: pool acquire timeout in ms (default `10000`)
+- `DB_POOL_CREATE_TIMEOUT_MS`: pool create timeout in ms (default `5000`)
+- `DB_POOL_IDLE_TIMEOUT_MS`: pool idle timeout in ms (default `30000`)
+
+Local connection tip:
+- Prefer `DB_HOST=127.0.0.1` for local machine startup.
+- `localhost` is normalized to `127.0.0.1` internally to reduce resolver edge cases.
 
 ## Migrations
 - `DB_MIGRATIONS_TABLE`
