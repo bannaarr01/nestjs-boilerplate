@@ -10,8 +10,8 @@ Reusable NestJS starter.
 
 ## Included Foundations
 - NestJS bootstrap with CORS, validation, URI versioning, Swagger toggle
-- Mandatory API key guard (`x-api-key`) + JWT auth module
-- `ApiOperationAndResponses`, `Role`, `ResourcePermission`, `Public` decorators
+- Keycloak auth via `nest-keycloak-connect` + global API key guard (`x-api-key`)
+- `ApiOperationAndResponses` + role/public decorators aligned with learning-platform
 - Centralized `ErrorHandlerService` and controller/service `try/catch` pattern
 - MikroORM with migration + seeder services
 - PostgreSQL/MySQL switching via command options
@@ -57,6 +57,12 @@ pwsh -File .\scripts\setup-codex-skills.ps1
 ```
 
 Included skills:
+- `add-module`
+- `add-endpoint`
+- `add-migration`
+- `add-test`
+- `review`
+- `handoff`
 - `sort-imports`
 - `typescript-review`
 - `security-audit`
@@ -68,7 +74,7 @@ Defaults:
 - `REDIS_ENABLED=false`
 - `STORAGE_PROVIDER=local`
 - `MAIL_PROVIDER=console`
-- `AUTH_DEMO_MODE=false`
+- `KEYCLOAK_REALM=app`
 
 Set once (writes `.env` and optionally starts Docker services):
 
@@ -114,13 +120,11 @@ npm run start:dev
 ```
 
 Startup validates security-critical env configuration and fails fast on invalid settings.
-`POST /api/v1/auth/login` is intentionally disabled until `AUTH_DEMO_MODE=true`.
 
 Key endpoints:
 - `GET /api/v1/healthz`
 - `GET /api/v1/readyz`
 - `GET /api/v1`
-- `POST /api/v1/auth/login`
 - `GET /api/v1/auth/me`
 - `GET /api/v1/queue/health` (public)
 - `GET /api/v1/queue/metrics`

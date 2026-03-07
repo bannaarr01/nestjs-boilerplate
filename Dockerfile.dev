@@ -1,0 +1,27 @@
+FROM node:22.12.0-alpine
+
+RUN apk update && apk add --no-cache tzdata
+
+COPY ./ /app
+
+WORKDIR /app
+
+RUN npm install
+
+RUN npm run build
+
+RUN mkdir -p /app/logs \
+    && mkdir -p /app/temp \
+    && mkdir -p /app/logs/applications \
+    && mkdir -p /app/logs/exceptions \
+    && mkdir -p /app/logs/errors \
+    && chmod -R 777 /app/logs \
+    && mkdir -p /app/data/attachments \
+    && mkdir -p /app/migrations \
+    && chmod -R 777 /app/data \
+    && chmod -R 777 /app/migrations \
+    && chmod -R 777 /app/temp
+
+EXPOSE 8080
+
+CMD ["npm", "run", "start:dev"]

@@ -65,15 +65,27 @@ function assertStrongSecret(name: string, value: string): void {
 
 export function validateEnvironmentOrThrow(): void {
    const apiKey = requireEnv('API_KEY');
-   const jwtSecret = requireEnv('JWT_SECRET');
+   const keycloakBaseUrl = requireEnv('KEYCLOAK_BASE_URL');
+   const keycloakRealm = requireEnv('KEYCLOAK_REALM');
+   const keycloakClientId = requireEnv('KEYCLOAK_CLIENT_ID');
    const dbClient = parseDbClient(process.env.DB_CLIENT);
    const storageProvider = parseStorageProvider(process.env.STORAGE_PROVIDER);
    const mailProvider = parseMailProvider(process.env.MAIL_PROVIDER);
-   const demoModeEnabled = parseBooleanEnv(process.env.AUTH_DEMO_MODE, false);
 
    if (isProductionLike()) {
       assertStrongSecret('API_KEY', apiKey);
-      assertStrongSecret('JWT_SECRET', jwtSecret);
+
+      if (keycloakBaseUrl.includes('localhost')) {
+         throw new Error('KEYCLOAK_BASE_URL must not use localhost in production/staging');
+      }
+
+      if (keycloakRealm === 'master') {
+         throw new Error('KEYCLOAK_REALM must use an application realm in production/staging');
+      }
+
+      if (keycloakClientId.includes('example') || keycloakClientId.includes('change-me')) {
+         throw new Error('KEYCLOAK_CLIENT_ID appears to use an insecure placeholder value');
+      }
    }
 
    if (dbClient === 'postgresql') {
@@ -117,10 +129,4 @@ export function validateEnvironmentOrThrow(): void {
          throw new Error('EMAIL_SOURCE or MAIL_FROM_ADDRESS is required when MAIL_PROVIDER=ses');
       }
    }
-
-   if (demoModeEnabled) {
-      requireEnv('AUTH_DEMO_EMAIL');
-      requireEnv('AUTH_DEMO_PASSWORD');
-   }
 }
-

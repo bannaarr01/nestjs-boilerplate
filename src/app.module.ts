@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppService } from './app.service';
 import { MailModule } from './mail/mail.module';
+import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { ProxyModule } from './proxy/proxy.module';
 import { QueueModule } from './queue/queue.module';
@@ -17,6 +18,7 @@ import { DbMigrationModule } from './database/migrations/db-migration.module';
 @Module({
    imports: [
       MikroOrmModule.forRoot(),
+      AuthModule,
       CommonModule,
       ProxyModule,
       MailModule,
@@ -33,4 +35,3 @@ import { DbMigrationModule } from './database/migrations/db-migration.module';
    providers: [AppService]
 })
 export class AppModule {}
-

@@ -1,42 +1,53 @@
+import {
+   AuthGuard,
+   RoleGuard,
+   ResourceGuard,
+   TokenValidation,
+   KeycloakConnectModule,
+} from 'nest-keycloak-connect';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthModule } from '../../auth/auth.module';
-import { DynamicModule, Module } from '@nestjs/common';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ThrottleGuard } from '../../common/guards/throttle.guard';
-import { ResourcePermissionGuard } from '../../common/guards/resource-permission.guard';
+import { CanActivate, DynamicModule, Module, Type } from '@nestjs/common';
+
+type GuardType = Type<CanActivate>;
 
 @Module({})
 export class AuthConfigModule {
-   static forRoot(): DynamicModule {
+   private static registerGuardsAndImports(importModule: any, guards: GuardType[]): DynamicModule {
       return {
          module: AuthConfigModule,
-         imports: [AuthModule],
-         providers: [
-            {
-               provide: APP_GUARD,
-               useClass: ApiKeyGuard
-            },
-            {
-               provide: APP_GUARD,
-               useClass: ThrottleGuard
-            },
-            {
-               provide: APP_GUARD,
-               useClass: JwtAuthGuard
-            },
-            {
-               provide: APP_GUARD,
-               useClass: RolesGuard
-            },
-            {
-               provide: APP_GUARD,
-               useClass: ResourcePermissionGuard
-            }
-         ],
-         exports: [AuthModule]
+         imports: [importModule],
+         providers: guards.map((guard) => ({
+            provide: APP_GUARD,
+            useClass: guard,
+         })),
+         exports: [importModule],
       };
    }
-}
 
+   static authenticateWithKeycloak(): DynamicModule {
+      const guards: GuardType[] = [ApiKeyGuard, AuthGuard, ResourceGuard, RoleGuard];
+
+      if (process.env.THROTTLE_ENABLED !== 'false') {
+         guards.unshift(ThrottleGuard);
+      }
+
+      return AuthConfigModule.registerGuardsAndImports(
+         KeycloakConnectModule.register({
+            authServerUrl: `${process.env.KEYCLOAK_BASE_URL}`,
+            realm: process.env.KEYCLOAK_REALM,
+            clientId: process.env.KEYCLOAK_CLIENT_ID,
+            secret: process.env.KEYCLOAK_CLIENT_SECRET || '',
+            realmPublicKey: process.env.KEYCLOAK_PUBLIC_KEY || '',
+            tokenValidation: TokenValidation.OFFLINE,
+            bearerOnly: true,
+         }),
+         guards,
+      );
+   }
+
+   static forRoot(): DynamicModule {
+      return AuthConfigModule.authenticateWithKeycloak();
+   }
+}

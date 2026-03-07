@@ -1,16 +1,14 @@
 import { AppService } from './app.service';
 import { ApiResponse } from './utils/api.util';
 import { AppInfoDto } from './app/dto/app-info.dto';
+import { Public, Roles } from 'nest-keycloak-connect';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Role } from './common/decorators/roles.decorator';
 import { HealthCheckDto } from './app/dto/health-check.dto';
 import { ApiVersion } from './common/enums/api-version.enum';
 import { Controller, Get, HttpStatus } from '@nestjs/common';
-import { Public } from './common/decorators/public.decorator';
 import { ReadinessCheckDto } from './app/dto/readiness-check.dto';
 import { ErrorHandlerService } from './common/services/error-handler.service';
 import { ApiOperationAndResponses } from './common/decorators/api-ops.decorator';
-import { ResourcePermission } from './common/decorators/resource-permission.decorator';
 
 @ApiTags('App')
 @Controller({ version: ApiVersion.ONE })
@@ -87,16 +85,15 @@ export class AppController {
   }
 
   @Get('secure')
-  @Role('admin')
-  @ResourcePermission('app', 'read')
+  @Roles({ roles: ['realm:admin'] })
   @ApiOperationAndResponses({
      summary: 'Secured test endpoint',
-     description: 'Example endpoint protected by role and resource permission decorators.',
+     description: 'Example endpoint protected by Keycloak role requirements.',
      responseModel: AppInfoDto,
      responseDescriptions: {
         [HttpStatus.OK]: 'Authorized app metadata',
-        [HttpStatus.FORBIDDEN]: 'Missing required role or permission',
-        [HttpStatus.UNAUTHORIZED]: 'Missing or invalid JWT token'
+        [HttpStatus.FORBIDDEN]: 'Missing required role',
+        [HttpStatus.UNAUTHORIZED]: 'Missing or invalid token'
      }
   })
   getSecureInfo(): ApiResponse<AppInfoDto> {
@@ -107,4 +104,3 @@ export class AppController {
      }
   }
 }
-

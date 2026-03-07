@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { timingSafeEqual } from 'node:crypto';
 import { ErrorCode } from '../enums/error-code.enum';
 import { CustomError } from '../classes/custom-error';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { META_UNPROTECTED } from 'nest-keycloak-connect';
 import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class ApiKeyGuard implements CanActivate {
       '/docs/swagger-ui-bundle.js',
       '/docs/swagger-ui-standalone-preset.js',
       '/docs/favicon-32x32.png',
-      '/docs/favicon-16x16.png'
+      '/docs/favicon-16x16.png',
    ];
 
    constructor(private readonly reflector: Reflector) {}
@@ -59,9 +59,10 @@ export class ApiKeyGuard implements CanActivate {
    }
 
    private isPublicRoute(context: ExecutionContext): boolean {
-      return (
-         this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]) === true
-      );
+      return this.reflector.getAllAndOverride<boolean>(
+         META_UNPROTECTED,
+         [context.getHandler(), context.getClass()],
+      ) === true;
    }
 
    private isMatchingApiKey(providedApiKey: string, configuredApiKey: string): boolean {
@@ -75,4 +76,3 @@ export class ApiKeyGuard implements CanActivate {
       return timingSafeEqual(providedBuffer, configuredBuffer);
    }
 }
-

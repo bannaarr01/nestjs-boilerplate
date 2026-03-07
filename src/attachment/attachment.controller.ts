@@ -20,16 +20,15 @@ import { AttachmentService } from './attachment.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetAttachmentDto } from './dto/get-attachment.dto';
 import { ApiVersion } from '../common/enums/api-version.enum';
-import { Public } from '../common/decorators/public.decorator';
 import { LocalFileQuery } from './types/local-file-query.type';
 import { ListAttachmentsDto } from './dto/list-attachments.dto';
 import { AuthUser } from '../auth/interfaces/auth-user.interface';
+import { AuthenticatedUser, Public } from 'nest-keycloak-connect';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto';
 import { AttachmentResponseDto } from './dto/attachment-response.dto';
 import { MulterStorageConfig } from '../config/storage/multer-storage.config';
 import { ErrorHandlerService } from '../common/services/error-handler.service';
 import { ApiOperationAndResponses } from '../common/decorators/api-ops.decorator';
-import { AuthenticatedUser } from '../common/decorators/authenticated-user.decorator';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 
 const DEFAULT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;

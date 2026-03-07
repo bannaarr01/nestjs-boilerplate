@@ -1,4 +1,5 @@
 import { QueueService } from './queue.service';
+import { Public } from 'nest-keycloak-connect';
 import { ApiResponse } from '../utils/api.util';
 import { QueueJobDto } from './dto/queue-job.dto';
 import { QueueHealthDto } from './dto/queue-health.dto';
@@ -6,7 +7,6 @@ import { QueueMetricsDto } from './dto/queue-metrics.dto';
 import { GetFailedJobsDto } from './dto/get-failed-jobs.dto';
 import { QueueJobParamDto } from './dto/queue-job-param.dto';
 import { ApiVersion } from '../common/enums/api-version.enum';
-import { Public } from '../common/decorators/public.decorator';
 import { EnqueueDemoJobDto } from './dto/enqueue-demo-job.dto';
 import { QueueTypeParamDto } from './dto/queue-type-param.dto';
 import { SchedulerMetricsDto } from './dto/scheduler-metrics.dto';
@@ -198,4 +198,3 @@ export class QueueController {
      }
   }
 }
-
