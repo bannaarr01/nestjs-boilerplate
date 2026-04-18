@@ -177,7 +177,7 @@ export class AttachmentController {
   }
 
   @Public()
-  @Get('files/*')
+  @Get('files/*path')
   @Version(ApiVersion.ONE)
   @ApiExcludeEndpoint()
   async getLocalFile(
@@ -186,7 +186,7 @@ export class AttachmentController {
     @Res({ passthrough: true }) response: Response
   ): Promise<StreamableFile> {
      try {
-        const encodedKey = request.params[0] || '';
+        const encodedKey = request.params['path'] || '';
         const buffer = await this.attachmentService.getLocalFileBuffer(encodedKey, query);
 
         response.setHeader('Content-Type', 'application/octet-stream');

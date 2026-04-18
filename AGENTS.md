@@ -78,7 +78,7 @@ IMPORTANT: Do not execute `git commit` or `git push` automatically.
 
 ## Project Summary
 
-Reusable NestJS 10 + MikroORM 6 boilerplate with:
+Reusable NestJS 11 + MikroORM 6 boilerplate with:
 - Keycloak auth (`nestjs-keycloak-auth`) + API key guard (`x-api-key`)
 - PostgreSQL/MySQL runtime switch
 - Optional Redis/BullMQ queue stack
@@ -92,7 +92,7 @@ Reusable NestJS 10 + MikroORM 6 boilerplate with:
 | Layer | Technology |
 |---|---|
 | Runtime | Node.js 22 |
-| Framework | NestJS 10 + TypeScript 5 |
+| Framework | NestJS 11 + TypeScript 5 |
 | ORM | MikroORM 6 |
 | Auth | Keycloak + API key guard |
 | Validation | `class-validator` + `class-transformer` |
