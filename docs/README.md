@@ -22,6 +22,8 @@ Repository note:
 - [Storage and Attachments](./storage-attachments.md)
 - [Mail Module](./mail-module.md)
 - [Proxy Module](./proxy-module.md)
+- Cache Module — see [Operations](./operations.md#cache)
+- Monitoring Module — see [Operations](./operations.md#monitoring)
 
 ## Operations
 - [Operations and Deployment](./operations.md)

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import 'winston-daily-rotate-file';
 import { mkdirSync } from 'node:fs';
 import { Injectable } from '@nestjs/common';
+import { getRequestId } from './request-context';
 
 @Injectable()
 export class LoggingService {
@@ -41,7 +42,9 @@ export class LoggingService {
          format: Winston.format.combine(
             Winston.format.timestamp(),
             Winston.format.printf(({ level, message, label, timestamp }) => {
-               return `${timestamp} [${label || 'APP'}] ${level}: ${message}`;
+               const reqId = getRequestId();
+               const prefix = reqId ? `[${reqId}] ` : '';
+               return `${timestamp} ${prefix}[${label || 'APP'}] ${level}: ${message}`;
             })
          ),
          transports: [

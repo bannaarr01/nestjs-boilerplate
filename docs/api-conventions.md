@@ -1,7 +1,8 @@
 # API Conventions and Swagger
 
 ## Standard Response
-All endpoints should return `ApiResponse<T>` from `src/utils/api.util.ts`.
+Responses are auto-wrapped by the global `ResponseInterceptor` into a standard envelope.
+Controllers using `ApiResponse<T>` are detected as already-wrapped and passed through.
 
 Example success envelope:
 ```json
@@ -11,6 +12,23 @@ Example success envelope:
   "data": {}
 }
 ```
+
+Example error envelope:
+```json
+{
+  "statusCode": 400,
+  "errorCode": "VALIDATION_FAILED",
+  "message": "name must not be empty",
+  "details": {
+    "fields": [{ "path": "name", "issue": "must not be empty" }]
+  },
+  "correlationId": "abc-123"
+}
+```
+
+### Response Decorators
+- `@UnwrapResponse()` — skip envelope wrapping (for file downloads, SSE, raw responses)
+- `@WrapResponse('Created')` — opt-in with custom message
 
 ## Swagger Decorator Standard
 Use `ApiOperationAndResponses` from `src/common/decorators/api-ops.decorator.ts` for all endpoints.

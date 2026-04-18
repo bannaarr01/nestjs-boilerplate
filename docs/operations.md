@@ -20,9 +20,10 @@ docker compose --profile redis up -d
 4. Optionally run seeders
 5. Start HTTP server
 
-## Health Endpoints
+## Health and Monitoring Endpoints
 - Liveness: `GET /api/v1/healthz`
 - Readiness: `GET /api/v1/readyz`
+- Metrics: `GET /api/v1/monitoring/metrics` (requires `x-api-key` header)
 
 Readiness checks:
 - database
@@ -40,6 +41,28 @@ Readiness checks:
 - throttle enabled
 - Redis throttle for multi-instance
 
+## Monitoring
+The in-memory monitoring module tracks:
+- Total request and error counts
+- Slow endpoint detection (configurable via `SLOW_API_THRESHOLD_MS`, default 3000ms)
+- Cache hit/miss ratios per key family
+
+Access metrics via `GET /api/v1/monitoring/metrics` with a valid API key.
+
+## Correlation ID
+Every request receives a correlation ID (`x-correlation-id` response header):
+- Sourced from `x-correlation-id` or `x-request-id` request header, or auto-generated UUID
+- Included in all log lines and error responses for end-to-end tracing
+
+## Graceful Shutdown
+`app.enableShutdownHooks()` is enabled — the app handles `SIGTERM`/`SIGINT` gracefully.
+
+## Cache
+In-memory cache module (`AppCacheModule`) provides:
+- `get`, `set`, `del` operations
+- `getOrSet` cache-aside pattern with automatic cache hit/miss monitoring
+- Configurable via `CACHE_TTL_DEFAULT` (seconds, default 300) and `CACHE_MAX_ITEMS` (default 1000)
+
 ## Log Notes
-- Request logging via `morgan`
-- Application logging via Winston abstraction
+- Request logging via correlation ID middleware with Winston
+- Application logging via Winston abstraction with per-request correlation ID prefix
