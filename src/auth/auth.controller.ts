@@ -2,9 +2,9 @@ import { AuthService } from './auth.service';
 import { ApiResponse } from '../utils/api.util';
 import { AuthUserDto } from './dto/auth-response.dto';
 import { AuthenticatedUser } from 'nestjs-keycloak-auth';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUser } from './interfaces/auth-user.interface';
 import { ApiVersion } from '../common/enums/api-version.enum';
+import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { ErrorHandlerService } from '../common/services/error-handler.service';
 import { Controller, Get, HttpCode, HttpStatus, Version } from '@nestjs/common';
 import { ApiOperationAndResponses } from '../common/decorators/api-ops.decorator';
@@ -12,6 +12,7 @@ import { ApiOperationAndResponses } from '../common/decorators/api-ops.decorator
 @ApiTags('Auth')
 @Controller('auth')
 @ApiBearerAuth()
+@ApiSecurity('x-api-key')
 export class AuthController {
    constructor(
       private readonly authService: AuthService,

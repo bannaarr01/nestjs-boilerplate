@@ -29,7 +29,7 @@ import { AttachmentResponseDto } from './dto/attachment-response.dto';
 import { MulterStorageConfig } from '../config/storage/multer-storage.config';
 import { ErrorHandlerService } from '../common/services/error-handler.service';
 import { ApiOperationAndResponses } from '../common/decorators/api-ops.decorator';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 const DEFAULT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const ATTACHMENT_MAX_FILE_SIZE_BYTES = Number(
@@ -38,6 +38,7 @@ const ATTACHMENT_MAX_FILE_SIZE_BYTES = Number(
 
 @ApiTags('Attachments')
 @ApiBearerAuth()
+@ApiSecurity('x-api-key')
 @Controller('attachments')
 export class AttachmentController {
    constructor(

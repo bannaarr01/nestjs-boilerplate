@@ -2,17 +2,18 @@ import { AppService } from './app.service';
 import { ApiResponse } from './utils/api.util';
 import { AppInfoDto } from './app/dto/app-info.dto';
 import { Public, Roles } from 'nestjs-keycloak-auth';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { HealthCheckDto } from './app/dto/health-check.dto';
 import { ApiVersion } from './common/enums/api-version.enum';
 import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ReadinessCheckDto } from './app/dto/readiness-check.dto';
+import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { ErrorHandlerService } from './common/services/error-handler.service';
 import { ApiOperationAndResponses } from './common/decorators/api-ops.decorator';
 
 @ApiTags('App')
 @Controller({ version: ApiVersion.ONE })
 @ApiBearerAuth()
+@ApiSecurity('x-api-key')
 export class AppController {
    constructor(
     private readonly appService: AppService,
