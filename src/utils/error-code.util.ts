@@ -10,7 +10,7 @@ export class ErrorCodeUtil {
          [HttpStatus.NOT_FOUND]: ErrorCode.RESOURCE_NOT_FOUND,
          [HttpStatus.CONFLICT]: ErrorCode.DUPLICATE_RECORD,
          [HttpStatus.TOO_MANY_REQUESTS]: ErrorCode.RATE_LIMIT_EXCEEDED,
-         [HttpStatus.REQUEST_TIMEOUT]: ErrorCode.PAYMENT_TIMEOUT,
+         [HttpStatus.REQUEST_TIMEOUT]: ErrorCode.REQUEST_TIMEOUT,
          [HttpStatus.INTERNAL_SERVER_ERROR]: ErrorCode.INTERNAL_SERVER_ERROR,
          [HttpStatus.SERVICE_UNAVAILABLE]: ErrorCode.SERVICE_UNAVAILABLE,
          [HttpStatus.NOT_IMPLEMENTED]: ErrorCode.NOT_IMPLEMENTED

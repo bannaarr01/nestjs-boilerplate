@@ -6,27 +6,11 @@ import { Options } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Migrator } from '@mikro-orm/migrations';
 import { SeedManager } from '@mikro-orm/seeder';
+import { parseBooleanEnv } from '../../utils/env.util';
+import { normalizeDbClient } from '../../utils/db.util';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { CustomMigrationGenerator } from '../../database/migrations/custom-migration.generator';
-
-type SupportedDbClient = 'postgresql' | 'mysql';
-
-function normalizeDbClient(value?: string): SupportedDbClient {
-   const normalizedValue = (value || 'postgresql').toLowerCase();
-
-   if (['postgres', 'postgresql', 'pg'].includes(normalizedValue)) {
-      return 'postgresql';
-   }
-
-   if (['mysql', 'mariadb'].includes(normalizedValue)) {
-      return 'mysql';
-   }
-
-   throw new Error(
-      `Unsupported DB_CLIENT: ${value}. Use one of: postgres, postgresql, pg, mysql, mariadb`
-   );
-}
 
 const dbClient = normalizeDbClient(process.env.DB_CLIENT);
 const isTest = process.env.NODE_ENV === 'test' || process.env.DB_DISABLE_CONNECT === 'true';
@@ -86,24 +70,6 @@ function resolvePoolConfig(): {
    };
 }
 
-function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
-   if (!value) {
-      return defaultValue;
-   }
-
-   const normalized = value.toLowerCase();
-
-   if (['true', '1', 'yes', 'on'].includes(normalized)) {
-      return true;
-   }
-
-   if (['false', '0', 'no', 'off'].includes(normalized)) {
-      return false;
-   }
-
-   return defaultValue;
-}
-
 function resolvePostgreSqlSchema(): string {
    const schema = process.env.DB_SCHEMA;
 
@@ -123,7 +89,7 @@ const commonConfig: Partial<Options> = {
    user: resolveDbValue('user', isPostgreSqlClient ? 'postgres' : 'root'),
    password: resolveDbValue('pass', isPostgreSqlClient ? 'postgres' : 'root'),
    host: resolveDbHost(),
-   debug: parseBoolean(process.env.DB_DEBUG, false),
+   debug: parseBooleanEnv(process.env.DB_DEBUG, false),
    connect: !isTest,
    allowGlobalContext: isTest,
    pool: resolvePoolConfig(),
@@ -159,9 +125,9 @@ const config: Options = {
          schema: resolvePostgreSqlSchema(),
          driverOptions: {
             connection: {
-               ssl: parseBoolean(process.env.DB_SSL, false)
+               ssl: parseBooleanEnv(process.env.DB_SSL, false)
                   ? {
-                     rejectUnauthorized: false
+                     rejectUnauthorized: parseBooleanEnv(process.env.DB_SSL_REJECT_UNAUTHORIZED, true)
                   }
                   : false
             }

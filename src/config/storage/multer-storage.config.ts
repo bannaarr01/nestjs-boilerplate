@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync } from 'node:fs';
 import { BadRequestException } from '@nestjs/common';
-import { diskStorage, memoryStorage, Options, StorageEngine } from 'multer';
+import { diskStorage, memoryStorage, StorageEngine } from 'multer';
+import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 
 export type MulterConfigOptions = {
   maxFileSize?: number;
@@ -59,7 +60,7 @@ export class MulterStorageConfig {
    static createFileFilter(allowedMimeTypes?: string[]) {
       const allowedMimes = allowedMimeTypes || this.DEFAULT_ALLOWED_MIMES;
 
-      return (_req: Request, file: Express.Multer.File, cb: (error: unknown, acceptFile: boolean) => void) => {
+      return (_req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
          if (!allowedMimes.includes(file.mimetype)) {
             cb(
                new BadRequestException(
@@ -74,7 +75,7 @@ export class MulterStorageConfig {
       };
    }
 
-   static createMulterOptions(options?: MulterConfigOptions): Options {
+   static createMulterOptions(options?: MulterConfigOptions): MulterOptions {
       const storageMode = options?.storageMode || (process.env.ATTACHMENT_UPLOAD_STORAGE as 'memory' | 'disk') || 'memory';
 
       return {
@@ -90,7 +91,7 @@ export class MulterStorageConfig {
       };
    }
 
-   static createUploadOptions(maxFileSizeBytes: number = this.DEFAULT_MAX_FILE_SIZE): Options {
+   static createUploadOptions(maxFileSizeBytes: number = this.DEFAULT_MAX_FILE_SIZE): MulterOptions {
       return this.createMulterOptions({
          maxFileSize: maxFileSizeBytes,
          allowedMimeTypes: this.DEFAULT_ALLOWED_MIMES,

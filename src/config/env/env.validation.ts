@@ -1,9 +1,9 @@
+import { normalizeDbClient } from '../../utils/db.util';
 import { isProduction, isStaging, parseBooleanEnv } from '../../utils/env.util';
 
 type AuthProvider = 'keycloak' | 'none';
 type MailProvider = 'console' | 'sendgrid' | 'smtp' | 'ses';
 type StorageProvider = 'local' | 's3';
-type DbClient = 'postgresql' | 'mysql';
 
 function requireEnv(name: string): string {
    const value = process.env[name];
@@ -13,20 +13,6 @@ function requireEnv(name: string): string {
    }
 
    return value.trim();
-}
-
-function parseDbClient(value: string | undefined): DbClient {
-   const normalizedValue = (value || 'postgresql').toLowerCase();
-
-   if (['postgres', 'postgresql', 'pg'].includes(normalizedValue)) {
-      return 'postgresql';
-   }
-
-   if (['mysql', 'mariadb'].includes(normalizedValue)) {
-      return 'mysql';
-   }
-
-   throw new Error(`Unsupported DB_CLIENT: ${value}`);
 }
 
 function parseStorageProvider(value: string | undefined): StorageProvider {
@@ -77,7 +63,7 @@ function assertStrongSecret(name: string, value: string): void {
 export function validateEnvironmentOrThrow(): void {
    const apiKey = requireEnv('API_KEY');
    const authProvider = parseAuthProvider(process.env.AUTH_PROVIDER);
-   const dbClient = parseDbClient(process.env.DB_CLIENT);
+   const dbClient = normalizeDbClient(process.env.DB_CLIENT);
    const storageProvider = parseStorageProvider(process.env.STORAGE_PROVIDER);
    const mailProvider = parseMailProvider(process.env.MAIL_PROVIDER);
 

@@ -15,12 +15,12 @@ RUN mkdir -p /app/logs \
     && mkdir -p /app/logs/applications \
     && mkdir -p /app/logs/exceptions \
     && mkdir -p /app/logs/errors \
-    && chmod -R 777 /app/logs \
     && mkdir -p /app/data/attachments \
     && mkdir -p /app/migrations \
-    && chmod -R 777 /app/data \
-    && chmod -R 777 /app/migrations \
-    && chmod -R 777 /app/temp
+    && chown -R node:node /app/logs \
+    && chown -R node:node /app/data \
+    && chown -R node:node /app/migrations \
+    && chown -R node:node /app/temp
 
 EXPOSE 8080
 

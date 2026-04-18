@@ -1,28 +1,11 @@
 import { format } from 'sql-formatter';
+import { normalizeDbClient } from '../../utils/db.util';
 import { TSMigrationGenerator } from '@mikro-orm/migrations';
 
 type MigrationDiff = {
   up: string[];
   down: string[];
 };
-
-type SupportedDbClient = 'postgresql' | 'mysql';
-
-function normalizeDbClient(value?: string): SupportedDbClient {
-   const normalizedValue = (value || 'postgresql').toLowerCase();
-
-   if (['postgres', 'postgresql', 'pg'].includes(normalizedValue)) {
-      return 'postgresql';
-   }
-
-   if (['mysql', 'mariadb'].includes(normalizedValue)) {
-      return 'mysql';
-   }
-
-   throw new Error(
-      `Unsupported DB_CLIENT: ${value}. Use one of: postgres, postgresql, pg, mysql, mariadb`
-   );
-}
 
 function parseCsvEnv(value?: string): string[] {
    if (!value) {

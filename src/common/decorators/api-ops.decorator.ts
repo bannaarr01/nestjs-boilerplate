@@ -90,9 +90,7 @@ export const ApiOperationAndResponses = ({
          )
    );
 
-   return function (target: object, key: string | symbol, descriptor: TypedPropertyDescriptor<unknown>) {
-      return applyDecorators(...decorators)(target, key, descriptor);
-   };
+   return applyDecorators(...decorators);
 };
 
 

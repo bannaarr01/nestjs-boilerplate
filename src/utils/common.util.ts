@@ -2,6 +2,7 @@ import { Request } from 'express';
 import { cwd } from 'node:process';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { parseBooleanEnv } from './env.util';
 import { plainToInstance } from 'class-transformer';
 
 interface ClassConstructor<T> {
@@ -84,14 +85,16 @@ export class CommonUtils {
    }
 
    static getClientIp(request: Request): string {
-      const forwarded = request.headers['x-forwarded-for'];
-      if (forwarded) {
-         return Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0].trim();
-      }
+      if (parseBooleanEnv(process.env.TRUST_PROXY, false)) {
+         const forwarded = request.headers['x-forwarded-for'];
+         if (forwarded) {
+            return Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0].trim();
+         }
 
-      const realIp = request.headers['x-real-ip'];
-      if (realIp) {
-         return Array.isArray(realIp) ? realIp[0] : realIp;
+         const realIp = request.headers['x-real-ip'];
+         if (realIp) {
+            return Array.isArray(realIp) ? realIp[0] : realIp;
+         }
       }
 
       return request.ip || request.socket.remoteAddress || 'unknown';

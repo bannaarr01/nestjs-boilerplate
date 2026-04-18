@@ -75,7 +75,7 @@ export class ErrorHandlerService {
       throw new CustomError(customErrMsg, statusCode, code);
    }
 
-   handleServiceError<T>(error: unknown, contextClass: ClassConstructor<T>, context: string): Error {
+   handleServiceError<T>(error: unknown, contextClass: ClassConstructor<T>, context: string): never {
       const errorLike = this.asErrorLike(error);
       const errorMessage = this.getErrorMessage(error);
 
@@ -86,11 +86,11 @@ export class ErrorHandlerService {
       });
 
       if (error instanceof CustomError) {
-         return error;
+         throw error;
       }
 
       if (this.isDuplicateError(errorMessage)) {
-         return new CustomError(
+         throw new CustomError(
             'A record with the same details already exists',
             HttpStatus.CONFLICT,
             ErrorCode.DUPLICATE_RECORD
@@ -98,7 +98,7 @@ export class ErrorHandlerService {
       }
 
       if (this.isNotFoundError(errorMessage)) {
-         return new CustomError(
+         throw new CustomError(
             'Requested resource not found',
             HttpStatus.NOT_FOUND,
             ErrorCode.RESOURCE_NOT_FOUND
@@ -106,26 +106,26 @@ export class ErrorHandlerService {
       }
 
       if (this.isUnauthorizedError(errorMessage, errorLike)) {
-         return new CustomError('Unauthorized request', HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
+         throw new CustomError('Unauthorized request', HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
       }
 
       if (this.isForbiddenError(errorMessage, errorLike)) {
-         return new CustomError('Insufficient permissions', HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN);
+         throw new CustomError('Insufficient permissions', HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN);
       }
 
       if (this.isTimeoutError(errorMessage, errorLike)) {
-         return new CustomError('Operation timed out', HttpStatus.REQUEST_TIMEOUT, ErrorCode.PAYMENT_TIMEOUT);
+         throw new CustomError('Operation timed out', HttpStatus.REQUEST_TIMEOUT, ErrorCode.REQUEST_TIMEOUT);
       }
 
       if (this.isServiceUnavailableError(errorMessage, errorLike)) {
-         return new CustomError(
+         throw new CustomError(
             'Service temporarily unavailable',
             HttpStatus.SERVICE_UNAVAILABLE,
             ErrorCode.SERVICE_UNAVAILABLE
          );
       }
 
-      return new CustomError(
+      throw new CustomError(
          'Internal Server Error',
          HttpStatus.INTERNAL_SERVER_ERROR,
          ErrorCode.INTERNAL_SERVER_ERROR

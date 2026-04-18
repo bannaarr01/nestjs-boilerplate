@@ -4,6 +4,24 @@ import { ErrorCode } from '../common/enums/error-code.enum';
 import { CustomError } from '../common/classes/custom-error';
 import { ErrorHandlerService } from '../common/services/error-handler.service';
 
+export type SupportedDbClient = 'postgresql' | 'mysql';
+
+export function normalizeDbClient(value?: string): SupportedDbClient {
+   const normalizedValue = (value || 'postgresql').toLowerCase();
+
+   if (['postgres', 'postgresql', 'pg'].includes(normalizedValue)) {
+      return 'postgresql';
+   }
+
+   if (['mysql', 'mariadb'].includes(normalizedValue)) {
+      return 'mysql';
+   }
+
+   throw new Error(
+      `Unsupported DB_CLIENT: ${value}. Use one of: postgres, postgresql, pg, mysql, mariadb`
+   );
+}
+
 export class DbUtils {
    static async findEntityOrFail<T>(
       entityClass: new () => T,

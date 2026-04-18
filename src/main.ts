@@ -16,8 +16,6 @@ import { validateEnvironmentOrThrow } from './config/env/env.validation';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { DbMigrationService } from './database/migrations/db-migration.service';
 
-process.setMaxListeners(100);
-
 function parseCsv(value: string | undefined, fallback: string[]): string[] {
    if (!value) {
       return fallback;
