@@ -5,7 +5,7 @@ It updates `.env` once, so you can run with plain `npm run start:dev`.
 
 ## Command
 ```bash
-npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=local --mail=console --docker=on
+npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=local --mail=console --auth=none --docker=on
 ```
 
 ## Supported Options
@@ -14,6 +14,7 @@ npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=loca
 - `--redis`: `on|off|true|false|1|0|yes|no`
 - `--storage`: `local|s3`
 - `--mail`: `console|sendgrid|smtp|ses`
+- `--auth`: `keycloak|none` (default `none`)
 - `--docker`: `on|off` (starts needed docker compose profiles)
 - `--env`: custom env path (default `.env`)
 
@@ -24,20 +25,21 @@ npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=loca
 - `REDIS_ENABLED`
 - `STORAGE_PROVIDER`
 - `MAIL_PROVIDER`
+- `AUTH_PROVIDER`
 
 Note:
 - Startup wrapper resolves `.env` from project root (`tools/run-command-with-db.js`), so values are consistent regardless of shell working directory.
 
 ## Example Profiles
 
-## Local Postgres + No Redis
+## Local Postgres + No Redis + No Auth
 ```bash
-npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=console --docker=on
+npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=console --auth=none --docker=on
 ```
 
-## MySQL + Redis + SMTP
+## MySQL + Redis + SMTP + Keycloak
 ```bash
-npm run setup:profile -- --db=mysql --redis=on --storage=local --mail=smtp --docker=on
+npm run setup:profile -- --db=mysql --redis=on --storage=local --mail=smtp --auth=keycloak --docker=on
 ```
 
 ## Postgres + SES + S3
@@ -54,5 +56,5 @@ npm install @aws-sdk/client-ses
 ## Optional Per-Run Overrides
 You can still override at runtime if needed:
 ```bash
-npm run start:dev -- --db=mysql --redis=off --storage=local --mail=console
+npm run start:dev -- --db=mysql --redis=off --storage=local --mail=console --auth=keycloak
 ```

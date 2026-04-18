@@ -79,7 +79,7 @@ IMPORTANT: Do not execute `git commit` or `git push` automatically.
 ## Project Summary
 
 Reusable NestJS 11 + MikroORM 6 boilerplate with:
-- Keycloak auth (`nestjs-keycloak-auth`) + API key guard (`x-api-key`)
+- Optional Keycloak auth (`nestjs-keycloak-auth`, `AUTH_PROVIDER=keycloak`) + API key guard (`x-api-key`)
 - PostgreSQL/MySQL runtime switch
 - Optional Redis/BullMQ queue stack
 - Storage abstraction (`local`/`s3`)
@@ -94,7 +94,7 @@ Reusable NestJS 11 + MikroORM 6 boilerplate with:
 | Runtime | Node.js 22 |
 | Framework | NestJS 11 + TypeScript 5 |
 | ORM | MikroORM 6 |
-| Auth | Keycloak + API key guard |
+| Auth | Optional Keycloak (`AUTH_PROVIDER=keycloak`) + API key guard |
 | Validation | `class-validator` + `class-transformer` |
 | API Docs | `@nestjs/swagger` |
 | Logging | Winston + `winston-daily-rotate-file` |
@@ -109,7 +109,7 @@ src/
 |- main.ts
 |- app.module.ts
 |- app.controller.ts
-|- auth/                          # Keycloak user-context endpoint(s)
+|- auth/                          # Auth user-context endpoint(s)
 |- attachment/                    # Upload/list/get/delete attachment metadata/files
 |- queue/                         # BullMQ metrics and job endpoints
 |- proxy/                         # Proxy endpoint forwarding
@@ -117,7 +117,7 @@ src/
 |- storage/                       # Local/S3 storage driver abstraction
 |- common/                        # Errors, guards, filters, decorators, enums
 |- config/
-|  |- auth/auth-config.module.ts  # Keycloak global guards registration
+|  |- auth/auth-config.module.ts  # Auth global guards registration (keycloak or API-key-only)
 |  |- database/mikro-orm.config.ts
 |  |- queue/redis/storage/throttle
 |- database/
@@ -140,24 +140,23 @@ tasks/
 5. Keep feature modules generic/template-safe; avoid domain-specific coupling.
 6. Keep migration generation deterministic and review generated SQL.
 
-## Auth Conventions (Keycloak)
+## Auth Conventions
+
+Auth provider is controlled by `AUTH_PROVIDER` (default `none`).
 
 - Global auth wiring lives in `src/config/auth/auth-config.module.ts`.
-- Guards order:
-  - `ThrottleGuard` (when enabled)
-  - `ApiKeyGuard`
-  - `AuthGuard`
-  - `ResourceGuard`
-  - `RoleGuard`
-- Required API key env:
+- `AUTH_PROVIDER=none` guards: `ThrottleGuard` (when enabled) + `ApiKeyGuard`
+- `AUTH_PROVIDER=keycloak` guards: `ThrottleGuard` (when enabled) + `ApiKeyGuard` + `AuthGuard` + `ResourceGuard` + `RoleGuard`
+- Required env (always):
   - `API_KEY`
-- Required env keys:
+- Required env (when `AUTH_PROVIDER=keycloak`):
   - `KEYCLOAK_BASE_URL`
   - `KEYCLOAK_REALM`
   - `KEYCLOAK_CLIENT_ID`
-- Optional env keys:
+- Optional env (when `AUTH_PROVIDER=keycloak`):
   - `KEYCLOAK_CLIENT_SECRET`
   - `KEYCLOAK_PUBLIC_KEY`
+- Decorators from `nestjs-keycloak-auth` (`@Public()`, `@Roles()`, `@AuthenticatedUser()`) are safe to use in controllers regardless of auth provider. They are no-ops when `AUTH_PROVIDER=none`.
 
 ## Runtime and DB Commands
 

@@ -53,7 +53,7 @@ Notes:
 This writes your selected profile into `.env`.
 
 ```bash
-npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=console --docker=on
+npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=console --auth=none --docker=on
 ```
 
 ## 3. Start App
@@ -68,6 +68,7 @@ npm run start:dev
 - Swagger (if `SHOW_SWAGGER=true`): `http://localhost:8080/docs`
 
 ## 5. Important Defaults
+- `AUTH_PROVIDER=none` by default. The app starts with only API key auth. Set `AUTH_PROVIDER=keycloak` (or use `--auth=keycloak`) to enable Keycloak guards. Keycloak env vars (`KEYCLOAK_BASE_URL`, etc.) are only required when `AUTH_PROVIDER=keycloak`.
 - `AUTH_DEMO_MODE=false` by default, so `POST /api/v1/auth/login` is disabled until you enable demo auth.
 - API key guard is global. Add `x-api-key` for non-public endpoints.
 - Redis is optional. Queue endpoints are mainly useful when Redis is enabled.

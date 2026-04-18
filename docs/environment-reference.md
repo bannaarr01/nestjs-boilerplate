@@ -28,6 +28,7 @@ Notes:
 
 ## Security and Auth
 - `API_KEY`: required; used by global API key guard
+- `AUTH_PROVIDER`: `keycloak|none` (default `none`). When `none`, only the API key guard is active. When `keycloak`, Keycloak guards (AuthGuard, ResourceGuard, RoleGuard) are registered globally.
 - `JWT_SECRET`: required
 - `JWT_EXPIRES_IN`: token expiry in seconds
 - `AUTH_DEMO_MODE`: default `false`
@@ -35,6 +36,13 @@ Notes:
 - `AUTH_DEMO_PASSWORD`: required if demo mode enabled
 - `AUTH_DEMO_ROLES`: comma-separated roles for demo user. Example: `admin,manager`
 - `AUTH_DEMO_PERMISSIONS`: comma-separated permissions for demo user. Example: `app:read,app:manage`
+
+## Keycloak (required when AUTH_PROVIDER=keycloak)
+- `KEYCLOAK_BASE_URL`: Keycloak server URL (e.g., `http://localhost:8081`)
+- `KEYCLOAK_REALM`: Keycloak realm name
+- `KEYCLOAK_CLIENT_ID`: Keycloak client ID
+- `KEYCLOAK_CLIENT_SECRET`: Keycloak client secret (optional)
+- `KEYCLOAK_PUBLIC_KEY`: Keycloak realm public key for offline token validation (optional)
 
 ## CORS and Networking
 - `TRUST_PROXY`: trust reverse proxy headers (`x-forwarded-for`)

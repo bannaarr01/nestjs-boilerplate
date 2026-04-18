@@ -40,6 +40,11 @@ const MAIL_ALIASES = {
   ses: 'ses'
 };
 
+const AUTH_ALIASES = {
+  keycloak: 'keycloak',
+  none: 'none'
+};
+
 function normalizeDbClient(rawValue) {
   if (!rawValue) {
     return 'postgresql';
@@ -96,6 +101,20 @@ function normalizeMailProvider(rawValue) {
   return normalized;
 }
 
+function normalizeAuthProvider(rawValue) {
+  if (!rawValue) {
+    return 'none';
+  }
+
+  const normalized = AUTH_ALIASES[String(rawValue).toLowerCase()];
+  if (!normalized) {
+    const supported = Object.keys(AUTH_ALIASES).join(', ');
+    throw new Error(`Unsupported --auth value: "${rawValue}". Supported values: ${supported}`);
+  }
+
+  return normalized;
+}
+
 function parseArgs(argv) {
   const commandArgs = [];
   let dbClient = process.env.DB_CLIENT;
@@ -103,6 +122,7 @@ function parseArgs(argv) {
   let redisEnabled = process.env.REDIS_ENABLED;
   let storageProvider = process.env.STORAGE_PROVIDER;
   let mailProvider = process.env.MAIL_PROVIDER;
+  let authProvider = process.env.AUTH_PROVIDER;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -172,6 +192,17 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (arg.startsWith('--auth=')) {
+      authProvider = arg.split('=')[1];
+      continue;
+    }
+
+    if (arg === '--auth') {
+      authProvider = argv[index + 1];
+      index += 1;
+      continue;
+    }
+
     commandArgs.push(arg);
   }
 
@@ -181,7 +212,8 @@ function parseArgs(argv) {
     dbSchema,
     redisEnabled: normalizeBooleanOption(redisEnabled, '--redis', 'false'),
     storageProvider: normalizeStorageProvider(storageProvider),
-    mailProvider: normalizeMailProvider(mailProvider)
+    mailProvider: normalizeMailProvider(mailProvider),
+    authProvider: normalizeAuthProvider(authProvider)
   };
 }
 
@@ -191,9 +223,10 @@ let dbSchema;
 let redisEnabled;
 let storageProvider;
 let mailProvider;
+let authProvider;
 
 try {
-  ({ commandArgs, dbClient, dbSchema, redisEnabled, storageProvider, mailProvider } = parseArgs(process.argv.slice(2)));
+  ({ commandArgs, dbClient, dbSchema, redisEnabled, storageProvider, mailProvider, authProvider } = parseArgs(process.argv.slice(2)));
 } catch (error) {
   console.error(error.message);
   process.exit(1);
@@ -206,7 +239,7 @@ if (dbClient === 'postgresql' && (!dbSchema || !String(dbSchema).trim())) {
 
 if (commandArgs.length === 0) {
   console.error(
-    'No command provided. Example: node tools/run-command-with-db.js nest start --watch --db=postgres --schema=public --redis=off --storage=local --mail=console'
+    'No command provided. Example: node tools/run-command-with-db.js nest start --watch --db=postgres --schema=public --redis=off --storage=local --mail=console --auth=none'
   );
   process.exit(1);
 }
@@ -221,7 +254,8 @@ const child = spawn(command, args, {
     DB_SCHEMA: dbSchema,
     REDIS_ENABLED: redisEnabled,
     STORAGE_PROVIDER: storageProvider,
-    MAIL_PROVIDER: mailProvider
+    MAIL_PROVIDER: mailProvider,
+    AUTH_PROVIDER: authProvider
   }
 });
 

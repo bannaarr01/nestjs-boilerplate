@@ -35,6 +35,11 @@ const MAIL_ALIASES = {
   ses: 'ses'
 };
 
+const AUTH_ALIASES = {
+  keycloak: 'keycloak',
+  none: 'none'
+};
+
 function fail(message) {
   console.error(message);
   process.exit(1);
@@ -76,12 +81,21 @@ function normalizeMail(value) {
   return normalized;
 }
 
+function normalizeAuth(value) {
+  const normalized = AUTH_ALIASES[String(value || 'none').toLowerCase()];
+  if (!normalized) {
+    fail(`Unsupported --auth value: ${value}`);
+  }
+  return normalized;
+}
+
 function parseArgs(argv) {
   let dbClient = process.env.DB_CLIENT || 'postgresql';
   let dbSchema = process.env.DB_SCHEMA || 'public';
   let redisEnabled = process.env.REDIS_ENABLED || 'false';
   let storageProvider = process.env.STORAGE_PROVIDER || 'local';
   let mailProvider = process.env.MAIL_PROVIDER || 'console';
+  let authProvider = process.env.AUTH_PROVIDER || 'none';
   let dockerEnabled = 'false';
   let envFile = '.env';
 
@@ -153,6 +167,17 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (arg.startsWith('--auth=')) {
+      authProvider = arg.split('=')[1];
+      continue;
+    }
+
+    if (arg === '--auth') {
+      authProvider = argv[index + 1];
+      index += 1;
+      continue;
+    }
+
     if (arg.startsWith('--docker=')) {
       dockerEnabled = arg.split('=')[1];
       continue;
@@ -194,6 +219,7 @@ function parseArgs(argv) {
     redisEnabled: normalizeBoolean(redisEnabled, '--redis', 'false'),
     storageProvider: normalizeStorage(storageProvider),
     mailProvider: normalizeMail(mailProvider),
+    authProvider: normalizeAuth(authProvider),
     dockerEnabled: normalizeBoolean(dockerEnabled, '--docker', 'false'),
     envFile
   };
@@ -203,7 +229,7 @@ function printHelp() {
   console.log(
     [
       'Usage:',
-      '  npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=local --mail=console --docker=on',
+      '  npm run setup:profile -- --db=postgres --schema=public --redis=on --storage=local --mail=console --auth=none --docker=on',
       '',
       'Options:',
       '  --db <postgres|postgresql|pg|mysql|mariadb>',
@@ -211,6 +237,7 @@ function printHelp() {
       '  --redis <on|off|true|false|1|0>',
       '  --storage <local|s3>',
       '  --mail <console|sendgrid|smtp|ses>',
+      '  --auth <keycloak|none>            Auth provider (default: none)',
       '  --docker <on|off>                 Start required docker compose profiles',
       '  --env <path>                      Env file path (default: .env)'
     ].join('\n')
@@ -267,6 +294,10 @@ function startDockerProfiles(repoRoot, options) {
     profiles.push('redis');
   }
 
+  if (options.authProvider === 'keycloak') {
+    profiles.push('keycloak');
+  }
+
   if (profiles.length === 0) {
     return;
   }
@@ -302,7 +333,8 @@ function main() {
     DB_PORT: options.dbClient === 'postgresql' ? '5432' : '3306',
     REDIS_ENABLED: options.redisEnabled,
     STORAGE_PROVIDER: options.storageProvider,
-    MAIL_PROVIDER: options.mailProvider
+    MAIL_PROVIDER: options.mailProvider,
+    AUTH_PROVIDER: options.authProvider
   };
 
   if (options.dbClient === 'postgresql') {
@@ -326,7 +358,7 @@ function main() {
 
   console.log(`Updated ${path.relative(repoRoot, envPath)} with selected runtime profile.`);
   console.log(
-    `Profile: db=${options.dbClient}, redis=${options.redisEnabled}, storage=${options.storageProvider}, mail=${options.mailProvider}`
+    `Profile: db=${options.dbClient}, redis=${options.redisEnabled}, storage=${options.storageProvider}, mail=${options.mailProvider}, auth=${options.authProvider}`
   );
   console.log('Run: npm run start:dev');
 }

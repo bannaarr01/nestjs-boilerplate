@@ -38,3 +38,15 @@ export function getEnvironment(): string {
 export function isRedisEnabled(): boolean {
    return parseBooleanEnv(process.env.REDIS_ENABLED, false);
 }
+
+type AuthProvider = 'keycloak' | 'none';
+
+export function getAuthProvider(): AuthProvider {
+   const value = (process.env.AUTH_PROVIDER || 'none').toLowerCase();
+   if (value === 'keycloak') return 'keycloak';
+   return 'none';
+}
+
+export function isKeycloakEnabled(): boolean {
+   return getAuthProvider() === 'keycloak';
+}

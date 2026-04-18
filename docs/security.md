@@ -1,8 +1,8 @@
 # Security Guide
 
 ## Secure Defaults in This Boilerplate
-- Global API key guard enabled.
-- JWT auth enabled for non-public routes.
+- Global API key guard enabled (always active).
+- Keycloak auth guards enabled when `AUTH_PROVIDER=keycloak` (opt-in).
 - Global throttle guard enabled.
 - Strict CORS/security headers in bootstrap.
 - Attachment local URLs are signed with HMAC.
@@ -27,8 +27,8 @@
 7. Set `TRUST_PROXY=true` only behind a trusted load balancer/proxy.
 
 ## Public Endpoints
-Only mark endpoint `@Public()` when required.  
-Public routes bypass API key and JWT guards.
+Only mark endpoint `@Public()` when required.
+Public routes bypass API key guard (and Keycloak guards when `AUTH_PROVIDER=keycloak`).
 
 ## File Upload Security
 - MIME allow-list check

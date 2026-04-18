@@ -1,5 +1,6 @@
 import { isProduction, isStaging, parseBooleanEnv } from '../../utils/env.util';
 
+type AuthProvider = 'keycloak' | 'none';
 type MailProvider = 'console' | 'sendgrid' | 'smtp' | 'ses';
 type StorageProvider = 'local' | 's3';
 type DbClient = 'postgresql' | 'mysql';
@@ -48,6 +49,16 @@ function parseMailProvider(value: string | undefined): MailProvider {
    throw new Error(`Unsupported MAIL_PROVIDER: ${value}`);
 }
 
+function parseAuthProvider(value: string | undefined): AuthProvider {
+   const normalizedValue = (value || 'none').toLowerCase();
+
+   if (normalizedValue === 'keycloak' || normalizedValue === 'none') {
+      return normalizedValue;
+   }
+
+   throw new Error(`Unsupported AUTH_PROVIDER: ${value}`);
+}
+
 function isProductionLike(): boolean {
    return isProduction() || isStaging();
 }
@@ -65,26 +76,32 @@ function assertStrongSecret(name: string, value: string): void {
 
 export function validateEnvironmentOrThrow(): void {
    const apiKey = requireEnv('API_KEY');
-   const keycloakBaseUrl = requireEnv('KEYCLOAK_BASE_URL');
-   const keycloakRealm = requireEnv('KEYCLOAK_REALM');
-   const keycloakClientId = requireEnv('KEYCLOAK_CLIENT_ID');
+   const authProvider = parseAuthProvider(process.env.AUTH_PROVIDER);
    const dbClient = parseDbClient(process.env.DB_CLIENT);
    const storageProvider = parseStorageProvider(process.env.STORAGE_PROVIDER);
    const mailProvider = parseMailProvider(process.env.MAIL_PROVIDER);
 
    if (isProductionLike()) {
       assertStrongSecret('API_KEY', apiKey);
+   }
 
-      if (keycloakBaseUrl.includes('localhost')) {
-         throw new Error('KEYCLOAK_BASE_URL must not use localhost in production/staging');
-      }
+   if (authProvider === 'keycloak') {
+      const keycloakBaseUrl = requireEnv('KEYCLOAK_BASE_URL');
+      const keycloakRealm = requireEnv('KEYCLOAK_REALM');
+      const keycloakClientId = requireEnv('KEYCLOAK_CLIENT_ID');
 
-      if (keycloakRealm === 'master') {
-         throw new Error('KEYCLOAK_REALM must use an application realm in production/staging');
-      }
+      if (isProductionLike()) {
+         if (keycloakBaseUrl.includes('localhost')) {
+            throw new Error('KEYCLOAK_BASE_URL must not use localhost in production/staging');
+         }
 
-      if (keycloakClientId.includes('example') || keycloakClientId.includes('change-me')) {
-         throw new Error('KEYCLOAK_CLIENT_ID appears to use an insecure placeholder value');
+         if (keycloakRealm === 'master') {
+            throw new Error('KEYCLOAK_REALM must use an application realm in production/staging');
+         }
+
+         if (keycloakClientId.includes('example') || keycloakClientId.includes('change-me')) {
+            throw new Error('KEYCLOAK_CLIENT_ID appears to use an insecure placeholder value');
+         }
       }
    }
 

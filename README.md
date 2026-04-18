@@ -10,7 +10,7 @@ Reusable NestJS starter.
 
 ## Included Foundations
 - NestJS bootstrap with CORS, validation, URI versioning, Swagger toggle
-- Keycloak auth via `nestjs-keycloak-auth` + global API key guard (`x-api-key`)
+- Optional Keycloak auth via `nestjs-keycloak-auth` (`AUTH_PROVIDER=keycloak`) + global API key guard (`x-api-key`)
 - `ApiOperationAndResponses` + role/public decorators aligned with learning-platform
 - Centralized `ErrorHandlerService` and controller/service `try/catch` pattern
 - MikroORM with migration + seeder services
@@ -74,14 +74,14 @@ Defaults:
 - `REDIS_ENABLED=false`
 - `STORAGE_PROVIDER=local`
 - `MAIL_PROVIDER=console`
-- `KEYCLOAK_REALM=app`
+- `AUTH_PROVIDER=none`
 
 Set once (writes `.env` and optionally starts Docker services):
 
 ```bash
-npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=console --docker=on
-npm run setup:profile -- --db=mysql --redis=on --storage=s3 --mail=smtp --docker=on
-npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=ses --docker=off
+npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=console --auth=none --docker=on
+npm run setup:profile -- --db=mysql --redis=on --storage=s3 --mail=smtp --auth=keycloak --docker=on
+npm run setup:profile -- --db=postgres --schema=public --redis=off --storage=local --mail=ses --auth=none --docker=off
 ```
 
 After that, run normally:
@@ -93,8 +93,8 @@ npm run start:dev
 If you want ad-hoc override, you can still switch per command:
 
 ```bash
-npm run start:dev -- --db=postgres --schema=public --redis=off --storage=local --mail=console
-npm run start:dev -- --db=mysql --redis=on --storage=s3 --mail=smtp
+npm run start:dev -- --db=postgres --schema=public --redis=off --storage=local --mail=console --auth=none
+npm run start:dev -- --db=mysql --redis=on --storage=s3 --mail=smtp --auth=keycloak
 npm run start:dev -- --db=postgres --schema=public --redis=off --storage=local --mail=ses
 ```
 
@@ -103,6 +103,7 @@ Supported values:
 - Redis: `on`, `off`, `true`, `false`, `1`, `0`, `yes`, `no`
 - Storage: `local`, `s3`
 - Mail: `console`, `sendgrid`, `smtp`, `ses`
+- Auth: `keycloak`, `none`
 
 Use standard DB env keys for both clients:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`

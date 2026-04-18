@@ -6,6 +6,7 @@ import {
    KeycloakAuthModule,
 } from 'nestjs-keycloak-auth';
 import { APP_GUARD } from '@nestjs/core';
+import { isKeycloakEnabled } from '../../utils/env.util';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { ThrottleGuard } from '../../common/guards/throttle.guard';
 import { CanActivate, DynamicModule, Module, Type } from '@nestjs/common';
@@ -23,6 +24,16 @@ export class AuthConfigModule {
             useClass: guard,
          })),
          exports: [importModule],
+      };
+   }
+
+   private static registerGuards(guards: GuardType[]): DynamicModule {
+      return {
+         module: AuthConfigModule,
+         providers: guards.map((guard) => ({
+            provide: APP_GUARD,
+            useClass: guard,
+         })),
       };
    }
 
@@ -47,7 +58,21 @@ export class AuthConfigModule {
       );
    }
 
+   static withoutAuth(): DynamicModule {
+      const guards: GuardType[] = [ApiKeyGuard];
+
+      if (process.env.THROTTLE_ENABLED !== 'false') {
+         guards.unshift(ThrottleGuard);
+      }
+
+      return AuthConfigModule.registerGuards(guards);
+   }
+
    static forRoot(): DynamicModule {
-      return AuthConfigModule.authenticateWithKeycloak();
+      if (isKeycloakEnabled()) {
+         return AuthConfigModule.authenticateWithKeycloak();
+      }
+
+      return AuthConfigModule.withoutAuth();
    }
 }
