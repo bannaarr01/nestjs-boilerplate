@@ -21,7 +21,8 @@ RUN npm ci --only=production --ignore-scripts
 
 FROM node:22-alpine AS production
 
-RUN addgroup -g 1001 -S nodejs && \
+RUN apk add --no-cache dumb-init && \
+    addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001
 
 WORKDIR /app
